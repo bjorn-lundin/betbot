@@ -782,7 +782,7 @@ end Get_Bet_Placer;
                     end if;
                   end;
 
-                when Horse_Back_AI_Nfl_1_Hn_100_Lr_0p10_E_12_Plc .. Horse_Back_AI_Nfl_5_Hn_300_Lr_0p05_E_12_Plc =>
+                when Horse_Back_AI_Nfl_1_Hn_100_Lr_0p10_E_12_Plc .. Horse_Back_AI_nfl_3_hn_300_lr_1p0_E_12_Plc =>
                   if First_Poll then
                     declare
                       M_Type     : Market_Type := Win;

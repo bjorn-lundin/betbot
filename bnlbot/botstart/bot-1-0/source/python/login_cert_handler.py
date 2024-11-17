@@ -158,25 +158,45 @@ class MyServer(BaseHTTPRequestHandler):
         num_from_leader = params['numFromLeader']
 
         label = -1
-        if num_from_leader > 0 :
-            cnt = num_from_leader
-            while cnt > 0 :
-                #remove the current leader and go for next
-#                print('cnt',cnt)
-                label = numpy.argmax(outputs)
-#                print('reset label',label,' was outputs[label]' ,outputs[label])
-                outputs[label] = 0.01
-                cnt = cnt -1
+#bnl        if num_from_leader > 0 :
+#bnl            cnt = num_from_leader
+#bnl            while cnt > 0 :
+#bnl                #remove the current leader and go for next
+#bnl#                print('cnt',cnt)
+#bnl                label = numpy.argmax(outputs)
+#bnl#                print('reset label',label,' was outputs[label]' ,outputs[label])
+#bnl                outputs[label] = 0.01
+#bnl                cnt = cnt -1
+#bnl
+#bnl            label = numpy.argmax(outputs)
+#bnl#            print('label_', label, 'outputs[label]', outputs[label])
+#bnl
+#bnl
+#bnl        elif num_from_leader == 0 :
+#bnl            # the index of the highest value corresponds to the label
+#bnl            label = numpy.argmax(outputs)
+#bnl#            print('label0', label, 'outputs[label]', outputs[label])
 
-            label = numpy.argmax(outputs)
-#            print('label_', label, 'outputs[label]', outputs[label])
+        tmp_outputs=[]
+            for elem in outputs:
+                tmp_outputs.append(elem[0])
 
+#     print("outputs",outputs)
+#     print("tmp_outputs1",tmp_outputs)
+        tmp_outputs.sort(reverse=True)
+#     print("tmp_outputs2",tmp_outputs)
 
-        elif num_from_leader == 0 :
-            # the index of the highest value corresponds to the label
-            label = numpy.argmax(outputs)
-#            print('label0', label, 'outputs[label]', outputs[label])
-
+        #get the value of the index we want from the sorted array
+        value = outputs[num_from_leader]
+    # find that value an get the index fron the unsorted array
+        idx = -1
+        for elem in outputs :
+            idx = idx +1
+            if abs(value - elem[0]) < 0.000001 :
+                break
+        if idx == -1 :
+            idx = 0
+        label = idx
 
 #        print('return', label, 'outputs[label]', outputs[label])
 #        print('outputs', outputs)
