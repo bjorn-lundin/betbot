@@ -178,8 +178,8 @@ class MyServer(BaseHTTPRequestHandler):
 #bnl#            print('label0', label, 'outputs[label]', outputs[label])
 
         tmp_outputs=[]
-            for elem in outputs:
-                tmp_outputs.append(elem[0])
+        for elem in outputs:
+            tmp_outputs.append(elem[0])
 
 #     print("outputs",outputs)
 #     print("tmp_outputs1",tmp_outputs)
