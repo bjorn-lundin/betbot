@@ -27,7 +27,7 @@ with Bets;
 with Config;
 with Utils; use Utils;
 with Sim;
-with Tics;
+--with Tics;
 
 with Aws;
 with Aws.Headers;
@@ -782,7 +782,7 @@ end Get_Bet_Placer;
                     end if;
                   end;
 
-                when Horse_Back_AI_Nfl_1_Hn_100_Lr_0p10_E_12_Plc .. Horse_Back_AI_NFL_0_HN_300_LR_1p0_E_12_Win =>
+                when Horse_Back_AI_Nfl_1_Hn_100_Lr_0p10_E_12_Plc .. Horse_Back_AI_NFL_0_HN_300_LR_1p00_E_12_Win =>
                   if First_Poll then
                     declare
                       M_Type     : Market_Type := Win;

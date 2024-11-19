@@ -28,7 +28,7 @@ else
 endif
 
 
-.PHONY : all adabot log bot race_time ws dir
+.PHONY : all adabot log bot race_time ws dir rebuild
 
 all : log
 
@@ -41,8 +41,11 @@ race_time : $(TARGET_ADA_INFO_SPEC) $(LOG_DIR_BOT) $(PIPE_DIR_BOT) $(C_CONSTANTS
 
 bot : adabot
 
-ws :
+ws:
 	gprbuild -p -P adabot bot_web_server
+
+rebuild:
+	gprbuild -p -P adabot
 
 repo: $(REPO_ENGINE)
 
