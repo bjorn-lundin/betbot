@@ -111,6 +111,11 @@ class MyServer(BaseHTTPRequestHandler):
         params = rpc['params']
 
         # interpret what pickle to load
+                
+        if params['useWinMarketName'] :
+            if os.path.exists(BASE + params['winMarketName']) :
+                BASE = BASE + '/' + params['winMarketName']
+        
 
         pickle_file_root = BASE + '/pickles'
         pickle_file =  "/" + params['betType']

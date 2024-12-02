@@ -100,7 +100,7 @@ procedure Poll is
       when others     => raise Constraint_Error with "No bet_placer found " & Bettype'Img & " " & Global_Bet_Placer'Img;
     end case;
 
-end Get_Bet_Placer;
+  end Get_Bet_Placer;
 
   ----------------------------------------------------------
 
@@ -807,7 +807,7 @@ end Get_Bet_Placer;
                       M_Type     : Market_Type := Win;
                       Image      : String := I'Img;
                       Do_Try_Bet : Boolean := True;
-                    --  use Markets;
+                      use Markets;
                     begin
                       if Utils.Position(Image, "PLC") > Integer(0) then
                         M_Type := Place;
@@ -818,6 +818,15 @@ end Get_Bet_Placer;
                         M_Type         := Win;
                         Match_Directly := True;
                       end if;
+
+                      if Do_Try_Bet then
+                        case Markets_Array(Win).Market_Subtype is
+                          when Plain  => Do_Try_Bet := not (Cfg.Bet(I).Chase_Allowed or Cfg.Bet(I).Hurdle_Allowed);
+                          when Chase  => Do_Try_Bet := Cfg.Bet(I).Chase_Allowed;
+                          when Hurdle => Do_Try_Bet := Cfg.Bet(I).Hurdle_Allowed;
+                        end case;
+                      end if;
+
 
                       if Do_Try_Bet then
                         Try_To_Make_Back_Bet_AI(Bettype         => I,
