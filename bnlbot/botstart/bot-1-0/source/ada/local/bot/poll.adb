@@ -832,7 +832,7 @@ procedure Poll is
                         Try_To_Make_Back_Bet_AI(Bettype         => I,
                                                 Br              => Unsorted_Runners,
                                                 Marketid        => Markets_Array(M_Type).Marketid,
-                                                Win_Marketname  => Market.Name,
+                                                Win_Marketname  => Market.Marketname,
                                                 Match_Directly  => Match_Directly);
                     end if;
                   end;
