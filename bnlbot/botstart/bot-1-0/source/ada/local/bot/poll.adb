@@ -285,6 +285,7 @@ end Get_Bet_Placer;
   procedure Try_To_Make_Back_Bet_Ai(Bettype         : Config.Bet_Type;
                                     Br              : Best_Runners_Array_Type;
                                     Marketid        : Marketid_Type;
+                                    Win_Marketname  : Marketname_Type;
                                     Match_Directly  : Boolean := False) is
 
     Price           : Fixed_Type;
@@ -306,6 +307,9 @@ end Get_Bet_Placer;
 
     Side            : Bet_Side_Type := Back;
     Idx             : Long_Long_Integer := 100;
+    
+    Market_Name     : String := Trim(Win_Marketname);
+    Use_Win_Market_Name : Boolean := False;
 
   begin
     --1         2         3         4
@@ -350,6 +354,21 @@ end Get_Bet_Placer;
         Append(Odds,Create(Float'Value(Utils.F8_Image(Price))));
       end loop;
     end if;
+    
+    
+    for i in Market_Name'range loop
+      case Market_Name(i) is
+        when ' '    => Market_Name(i) := '_' ;
+        when others => null;
+      end case;
+    end loop;
+
+
+    Use_Win_Market_Name := Bettype in Horse_Back_AI_nfl_0_hn_300_lr_1p00_E_12_Plc ..
+                                     Horse_Back_AI_NFL_0_HN_300_LR_1p00_E_12_Win;
+
+    Params.Set_Field (Field_Name => "winMarketName", Field => Market_Name);
+    Params.Set_Field (Field_Name => "useWinMarketName", Field => Use_Win_Market_Name);
 
     Params.Set_Field (Field_Name => "hiddenNodes", Field => Long_Long_Integer'Value(Image(24..26)));
     S_Lr(2) := '.'; -- Get rid of the 'p'
@@ -804,6 +823,7 @@ end Get_Bet_Placer;
                         Try_To_Make_Back_Bet_AI(Bettype         => I,
                                                 Br              => Unsorted_Runners,
                                                 Marketid        => Markets_Array(M_Type).Marketid,
+                                                Win_Marketname  => Market.Name,
                                                 Match_Directly  => Match_Directly);
                     end if;
                   end;
