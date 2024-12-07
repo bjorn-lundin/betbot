@@ -249,19 +249,6 @@ package Sim is
                                     Wints_Placets_Map :    out Wints_Placets_Maps.Map);
 
 
-
-
-
-  --average times for different races
-  package Racetime_Maps is new Ada.Containers.Hashed_Maps
-    (Bot_Types.Marketname_Type,
-     Calendar2.Seconds_Type,
-     Ada.Strings.Hash,
-     "=",
-     "=");
-
-  procedure Fill_Race_Times(Animal : in     Animal_Type; Rt_Map : out Racetime_Maps.Map);
-
   function Is_Race_Winner(Runner               : Runners.Runner_Type;
                           Marketid             : Marketid_Type) return Boolean;
 
@@ -271,7 +258,7 @@ package Sim is
   procedure Fill_Data_Maps (Date   : in Calendar2.Time_Type;
                             Animal : in Animal_Type;
                             Rewards : Boolean := True;
-                            Racetimes : Boolean := True;
+                         --   Racetimes : Boolean := True;
                             Race_Prices : Boolean := True) ;
 
 
@@ -290,7 +277,7 @@ package Sim is
   Win_Place_Map                            : Sim.Win_Place_Maps.Map;
 --  Place_Win_Map                            : Sim.Place_Win_Maps.Map;
   Events_Map                               : Sim.Eventid_Events_Maps.Map;
-  Racetime_Map                             : Sim.Racetime_Maps.Map;
+--  Racetime_Map                             : Sim.Racetime_Maps.Map;
   Rewards_Map                              : Sim.Rewards_Maps.Map;
 
   Wints_Placets_Map                        : Sim.Wints_Placets_Maps.Map;

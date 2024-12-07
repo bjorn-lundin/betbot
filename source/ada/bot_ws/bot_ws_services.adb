@@ -34,7 +34,7 @@ with Calendar2;
 with Rpc;
 with Utils;
 with Logging; use Logging;
-with Gnatcoll.Json; use Gnatcoll.Json;
+with botcoll.Json; use botcoll.Json;
 with Bets;
 with Table_Astarttimes;
 with Ini;
@@ -1092,8 +1092,8 @@ package body Bot_Ws_Services is
         Smtp_Server : Smtp.Receiver := Smtp.Client.Initialize
           (Smtp_Server_Name,
            Port       => 465,
-           --Security   => smtp.STARTTLS);
-           Secure     => True);
+           Security   => smtp.STARTTLS);
+           --Secure     => True);
         --Credential => Auth'Unchecked_Access);
         use Ada.Characters.Latin_1;
         Msg : constant String := 

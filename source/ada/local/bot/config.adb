@@ -14,6 +14,7 @@ package body Config is
     Service : constant String := "Create";
     Cfg     : Config_Type;
   begin
+    text_io.put_line(Me & Service &  " read ini file :'" & Filename & "'");
     Log(Me & Service, "read ini file :'" & Filename & "'");
 
     Ini.Load(Filename);

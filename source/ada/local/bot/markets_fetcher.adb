@@ -5,7 +5,7 @@ with Types; use Types;
 with Sql;
 with Ada.Calendar.Time_Zones;
 with Calendar2; use Calendar2;
-with Gnatcoll.Json; use Gnatcoll.Json;
+with botcoll.Json; use botcoll.Json;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Token ;

@@ -26,7 +26,7 @@ with Bot_Svn_Info;
 with Bets;
 with Config;
 with Utils; use Utils;
-with Sim;
+--with Sim;
 --with Tics;
 
 with Aws;
@@ -35,7 +35,7 @@ with Aws.Headers;
 with Aws.Response;
 with Aws.Client;
 
-with Gnatcoll.Json; use Gnatcoll.Json;
+with botcoll.Json; use botcoll.Json;
 
 
 
@@ -909,7 +909,7 @@ begin
     Cfg.Enabled := Ev.Value("BOT_MACHINE_ROLE") = "PROD";
   end if;
 
-  Sim.Fill_Race_Times(Horse, Sim.Racetime_Map);
+--  Sim.Fill_Race_Times(Horse, Sim.Racetime_Map);
 
   Main_Loop : loop
 

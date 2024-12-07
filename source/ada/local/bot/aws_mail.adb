@@ -101,8 +101,8 @@ procedure Aws_Mail is
           (SMTP_Server_Name,
 --           Port       => 587,
            Port       => 465,
-           Secure     => True,
-           --Security   => smtp.starttls,
+           --Secure     => True,
+           Security   => smtp.starttls,
            Credential => Auth'Unchecked_Access);
       begin
         Log("mail", "start send");

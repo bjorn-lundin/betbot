@@ -12,18 +12,19 @@
 #cat crontab.tmp | crontab
 #crontab -l
 #rm crontab.tmp
-#echo "* * * * * cd / && /home/bnl/svn/botstart/bot-1-0/script/bash/keep_bots_alive.bash" | crontab
+#echo "* * * * * cd / && /usr2/betbot/script/bash/keep_bots_alive.bash" | crontab
 
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
 
 #exit 0
 
+echo "start new file" > /usr2/kba.log
 
 function log () {
-  return ""
+#  return ""
   echo "$(date) : $1"
-  echo "$(date) : $1" >> /tmp/kba.log
+  echo "$(date) : $1" >> /usr2/kba.log
 }
 
 log "start"
@@ -31,16 +32,17 @@ log "start"
 
 TZ='Europe/Stockholm'
 export TZ
-[ -d /home/bnl/svn/botstart ] && export BOT_START=/home/bnl/svn/botstart
-[ -d /bnlbot/botstart ] && export BOT_START=/bnlbot/botstart
-[ -d /bnlbot/bnlbot/botstart ] && export BOT_START=/bnlbot/bnlbot/botstart
 
-log "BOT_START -  ${BOT_START}"
+/usr/bin/env >> /usr2/kba.log
 
-date +"%Y-%m-%d %H:%M:%S" > ${BOT_START}/bot-1-0/script/bash/last_run_keeep_alive.dat
+log "BOT_ROOT -  ${BOT_ROOT}"
 
-#defaults. sets $BOT_SOURCE and $BOT_START
-. $BOT_START/bot.bash bnl
+date +"%Y-%m-%d %H:%M:%S" > ${BOT_ROOT}/last_run_keeep_alive.dat
+
+. ${BOT_ROOT}/bot.bash bnl
+
+date +"%Y-%m-%d %H:%M:%S" > ${BOT_SCRIPT}/bash/last_run_keeep_alive.dat
+
 
 function Start_Bot () {
 
@@ -100,8 +102,15 @@ function Check_Bots_For_User () {
     ;;
   esac
 
+  log "BOT_USER $BOT_USER"
+  log "BOT_WEEK_DAY $BOT_WEEK_DAY"
+  log "BOT_HOUR $BOT_HOUR"
+  log "BOT_MINUTE $BOT_MINUTE"
+  log "will run $BOT_ROOT/bot.bash $BOT_USER"
+  . $BOT_ROOT/bot.bash $BOT_USER
 
-  . $BOT_START/bot.bash $BOT_USER
+  /usr/bin/env  >> /usr2/kba.log
+
   #No login file -> give up
   [ ! -r $BOT_HOME/login.ini ] && return 0
 

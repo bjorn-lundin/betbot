@@ -32,21 +32,14 @@ esac
 if [ $bits == "armv7l" ] ; then
   export ADA_ROOT=/usr/local/ada
   export ADA_PROJECT_PATH=$ADA_ROOT/aws/fsf-aws2018-gpl/share/gpr:/usr/local/ada/xmlada/21.0.0/share/gpr
-#else
-#  export ADA_ROOT=/usr/local/ada/2017
-#  export ADA_PROJECT_PATH=$ADA_ROOT/aws/lib/gnat:$ADA_PROJECT_PATH
-#  export PATH=$ADA_ROOT/gprbuild/bin:$ADA_ROOT/gnat/bin:$PATH
+else
+# set in /etc/environment  export BOT_ROOT=/usr2/betbot
+# set in /etc/environment  export BOT_TOOLS=/usr2/tools
+  export ADA_PROJECT_PATH=$BOT_TOOLS/aws-2024-12-06/25.0/share/gpr
+  export PATH=$BOT_TOOLS/gnat/25.0/bin:$PATH
 fi
 
-. $BOT_START/bot.bash bnl
+. $BOT_ROOT/bot.bash bnl
 
-#USERS=$(ls $BOT_HOME/../)
-#S=""
-#for U in $USERS ; do
-#  S="$S . $BOT_START/bot.bash $U; stop_all_bots ;"
-#done
-#S="$S . $BOT_START/bot.bash bnl"
-#alias stop_bot_system=$S
-
-. $BOT_START/bash_aliases.bash
+. $BOT_ROOT/bash_aliases.bash
 

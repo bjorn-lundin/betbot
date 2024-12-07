@@ -45,7 +45,7 @@ package body Sim is
 
   Object          : constant String := "Sim.";
   Min_Num_Samples : constant Ada.Containers.Count_Type := 50;
-  Global_Race_Times_Filled : Boolean := False;
+--  Global_Race_Times_Filled : Boolean := False;
 
   use type Ada.Containers.Count_Type;
 
@@ -1202,7 +1202,7 @@ package body Sim is
   procedure Fill_Data_Maps (Date   : in Calendar2.Time_Type;
                             Animal : in Animal_Type;
                             Rewards : Boolean := True;
-                            Racetimes : Boolean := True;
+  --                          Racetimes : Boolean := True;
                             Race_Prices : Boolean := True) is
   begin
     Log("fill maps with Date " & Date.String_Date_ISO & " for animal " &  Animal'Img);
@@ -1246,11 +1246,11 @@ package body Sim is
       Log("Found:" & Rewards_Map.Length'Img );
     end if;
 
-    if Racetimes then
-      Log("fill Race_Times map");
-      Fill_Race_Times(Animal, Racetime_Map);
-      Log("Found:" & Racetime_Map.Length'Img );
-    end if;
+--    if Racetimes then
+--      Log("fill Race_Times map");
+--      Fill_Race_Times(Animal, Racetime_Map);
+--      Log("Found:" & Racetime_Map.Length'Img );
+--    end if;
 
     Log("fill map Wints/Placets timestamps ");
     Fill_Wints_Placets_Map (Date, Animal, Wints_Placets_Map);
@@ -1346,44 +1346,6 @@ package body Sim is
       end;
     end if;
   end Delete_Shared_Mem;
-  --------------------------------------
-
-  procedure Fill_Race_Times(Animal : in Animal_Type; Rt_Map : out Racetime_Maps.Map) is
-    Computer_File : Awk.Session_Type;
-    Filename : String := Ev.Value("BOT_DATA") & "/race_length_times.dat";
-  begin
-
-    case Animal is
-      when Horse =>
-        if not Global_Race_Times_Filled then
-          Awk.Set_Current (Computer_File);
-          Awk.Open (Separators => "|",
-                    Filename   => Filename);
-
-          while not Awk.End_Of_File loop
-            Awk.Get_Line;
-           -- Log("Fill_Race_Times", Awk.Field(0)) ;
-           -- Log("Fill_Race_Times", "|" & Awk.Field(1) & "|" & Awk.Field(2) & "|") ;
-            declare
-              S   : Calendar2.Seconds_Type := 0;
-              Key : Marketname_Type :=(others => ' ');
-            begin -- name                                               secs time      #races
-              --3m Hcap Hrd                                       | 351|05:51.000| 262
-              Key := Awk.Field(1);
-              S   := Seconds_Type'Val(Awk.Field(2));
-              Rt_Map.Insert(Key, S);
-            end;
-          end loop;
-          Awk.Close (Computer_File);
-          Global_Race_Times_Filled := True;
-        end if;
-      when Hound |
-           Human => raise Constraint_Error with "not implemented animal " & Animal'Img;
-    end case;
-
-
-  end Fill_Race_Times;
-
   --------------------------------------
 
 end Sim ;

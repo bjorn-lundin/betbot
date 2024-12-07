@@ -48,12 +48,8 @@ project Global is
 
    Xml_Source := (Bot_Source & "/ada/global/xmlada-2018-src");
 
--- need to move since newer gnatcoll gice float image as 1.009913954 instead of 1.01 - which BF refuses to use
---/opt/gnat/25.0w/include/gnatcoll_core/gnatcoll-bnl.ads-bnl      
---/opt/gnat/25.0w/include/gnatcoll_core/gnatcoll-bnljson.ads-bnl           
---/opt/gnat/25.0w/include/gnatcoll_core/gnatcoll-bnljson.adb-bnl  
---/opt/gnat/25.0w/include/gnatcoll_core/gnatcoll-json-utility-bnl.ads-bnl
---/opt/gnat/25.0w/include/gnatcoll_core/gnatcoll-json-utility-bnl.adb-bnl
+-- need to move since newer gnatcoll give float image as 1.009913954 instead of 1.01 - which BF refuses to use
+-- moved to bot_coll instead
 
    Common_Source_Dirs := ( "local",
                            "global",
@@ -101,7 +97,7 @@ project Global is
    end Linker;
 
    package Builder is
-      for Default_Switches ("ada") use ("-k", "-s", "-j4", "-m"); -- use 1 cpu , less recompile
+      for Default_Switches ("ada") use ("-k", "-s", "-j4", "-m"); -- use 4 cpus if avail , less recompile
    end Builder;
 
 

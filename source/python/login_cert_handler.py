@@ -100,7 +100,7 @@ class MyServer(BaseHTTPRequestHandler):
 
     def do_treat_ai_request(self, post_data) :
         #BASE = os.environ['BOT_TARGET']  no bot env here
-        BASE = '/bnlbot/bnlbot/botstart/bot-1-0/target'
+        BASE = '/usr2/betbot/target'
         # get the JSON into dict
 #        print('post_data',post_data)
         rpc = json.loads(post_data)
@@ -111,11 +111,10 @@ class MyServer(BaseHTTPRequestHandler):
         params = rpc['params']
 
         # interpret what pickle to load
-                
+
         if params['useWinMarketName'] :
             if os.path.exists(BASE + params['winMarketName']) :
                 BASE = BASE + '/' + params['winMarketName']
-        
 
         pickle_file_root = BASE + '/pickles'
         pickle_file =  "/" + params['betType']
@@ -247,9 +246,9 @@ class MyServer(BaseHTTPRequestHandler):
           user = 'msm'
 
 
-        cert_path_prefix = os.getenv('BOT_START')
+        cert_path_prefix = os.getenv('BOT_ROOT')
         if cert_path_prefix is None :
-           cert_path_prefix = '/bnlbot/bnlbot/botstart'
+           cert_path_prefix = '/usr2/betbot/bnlbot/'
 
         cert_path = cert_path_prefix + '/user/' + user + '/certificates'
 
@@ -327,12 +326,12 @@ class MyServer(BaseHTTPRequestHandler):
 webServer = HTTPServer((hostName, serverPort), MyServer)
 print("Server started http://%s:%s" % (hostName, serverPort))
 
-logging.basicConfig(filename='/bnlbot/bnlbot/botstart/bot-1-0/target/log/python_login_service.log', level=logging.INFO,format='%(asctime)s %(message)s')
+logging.basicConfig(filename='/usr2/betbot/target/log/python_login_service.log', level=logging.INFO,format='%(asctime)s %(message)s')
 
 pid = os.getpid()
 print('pid',pid)
 
-with open("/bnlbot/bnlbot/botstart/bot-1-0/target/befair_logon_daemon.pid", "w") as file1:
+with open("/usr2/betbot/target/befair_logon_daemon.pid", "w") as file1:
     # Writing data to a file
     file1.write(str(pid) + "\n")
 
