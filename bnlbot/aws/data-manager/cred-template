@@ -1,8 +1,0 @@
-# 1. Make a copy of this file to 'cred'
-# 2. Enter secret keys below
-# 3. Do not add/commit to SCM!!
-
-# http://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html
-
-export AWS_ACCESS_KEY_ID="xxx"
-export AWS_SECRET_ACCESS_KEY="yyy"
