@@ -1,6 +1,6 @@
 
-TZ='Europe/Stockholm'
-export TZ
+
+
 
 export HOSTNAME=$(hostname)
 

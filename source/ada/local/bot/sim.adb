@@ -1180,11 +1180,11 @@ package body Sim is
       Service      : constant String := "Read_From_Disk";
     begin
          -- Log(Object & Service, "read from file '" & Filename & "'");
-      loop
-        exit when not Ad.Exists("/dev/shm/block.dat") ;
-        Log(Object & Service, "Blocking file detected - wait");
-        delay 0.2;
-      end loop;
+--      loop
+--        exit when not Ad.Exists("/dev/shm/block.dat") ;
+--        Log(Object & Service, "Blocking file detected - wait");
+--        delay 0.2;
+--      end loop;
 
       Ada.Streams.Stream_IO.Open
         (File => File,
@@ -1299,53 +1299,53 @@ package body Sim is
    ------------------------------------------------------------------
 
 
-  procedure Delete_Shared_Mem (Date   : in Calendar2.Time_Type;
-                               Animal : in Animal_Type) is
-    Ani  : String := Lower_Case(Animal'Img);
-    Path : String := "/dev/shm/streamed_objects/" & Ani & "/";
-  begin
-    if Date.Month < Month_Type(10) and Date.Day < Day_Type(10) then
-      declare
-        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-0" & Trim(Date.Month'Img) & "-0" & Trim(Date.Day'Img);
-      begin
-        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
-        if AD.Exists(Dir_On_Disk) then
-          AD.Delete_Tree(Dir_On_Disk);
-          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
-        end if;
-      end;
-    elsif Date.Month >= Month_Type(10) and Date.Day < Day_Type(10) then
-      declare
-        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-" & Trim(Date.Month'Img) & "-0" & Trim(Date.Day'Img);
-      begin
-        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
-        if AD.Exists(Dir_On_Disk) then
-          AD.Delete_Tree(Dir_On_Disk);
-          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
-        end if;
-      end;
-    elsif Date.Month < Month_Type(10) and Date.Day >= Day_Type(10) then
-      declare
-        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-0" & Trim(Date.Month'Img) & "-" & Trim(Date.Day'Img);
-      begin
-        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
-        if AD.Exists(Dir_On_Disk) then
-          AD.Delete_Tree(Dir_On_Disk);
-          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
-        end if;
-      end;
-    elsif Date.Month >= Month_Type(10) and Date.Day >= Day_Type(10) then
-      declare
-        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-" & Trim(Date.Month'Img) & "-" & Trim(Date.Day'Img);
-      begin
-        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
-        if AD.Exists(Dir_On_Disk) then
-          AD.Delete_Tree(Dir_On_Disk);
-          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
-        end if;
-      end;
-    end if;
-  end Delete_Shared_Mem;
+--  procedure Delete_Shared_Mem (Date   : in Calendar2.Time_Type;
+--                               Animal : in Animal_Type) is
+--    Ani  : String := Lower_Case(Animal'Img);
+--    Path : String := "/dev/shm/streamed_objects/" & Ani & "/";
+--  begin
+--    if Date.Month < Month_Type(10) and Date.Day < Day_Type(10) then
+--      declare
+--        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-0" & Trim(Date.Month'Img) & "-0" & Trim(Date.Day'Img);
+--      begin
+--        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
+--        if AD.Exists(Dir_On_Disk) then
+--          AD.Delete_Tree(Dir_On_Disk);
+--          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
+--        end if;
+--      end;
+--    elsif Date.Month >= Month_Type(10) and Date.Day < Day_Type(10) then
+--      declare
+--        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-" & Trim(Date.Month'Img) & "-0" & Trim(Date.Day'Img);
+--      begin
+--        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
+--        if AD.Exists(Dir_On_Disk) then
+--          AD.Delete_Tree(Dir_On_Disk);
+--          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
+--        end if;
+--      end;
+--    elsif Date.Month < Month_Type(10) and Date.Day >= Day_Type(10) then
+--      declare
+--        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-0" & Trim(Date.Month'Img) & "-" & Trim(Date.Day'Img);
+--      begin
+--        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
+--        if AD.Exists(Dir_On_Disk) then
+--          AD.Delete_Tree(Dir_On_Disk);
+--          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
+--        end if;
+--      end;
+--    elsif Date.Month >= Month_Type(10) and Date.Day >= Day_Type(10) then
+--      declare
+--        Dir_On_Disk : String := Path & Trim(Date.Year'Img) & "-" & Trim(Date.Month'Img) & "-" & Trim(Date.Day'Img);
+--      begin
+--        Log("Delete_Shared_Mem","will delete " & Dir_On_Disk );
+--        if AD.Exists(Dir_On_Disk) then
+--          AD.Delete_Tree(Dir_On_Disk);
+--          Log("Delete_Shared_Mem","Deleted " & Dir_On_Disk );
+--        end if;
+--      end;
+--    end if;
+--  end Delete_Shared_Mem;
   --------------------------------------
 
 end Sim ;

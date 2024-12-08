@@ -19,6 +19,8 @@
 
 #exit 0
 
+
+
 echo "start new file" > /usr2/kba.log
 
 function log () {

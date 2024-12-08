@@ -1,5 +1,13 @@
 #!/bin/bash
 
+
+TZ='Europe/Stockholm'
+export TZ
+
+#24 hr clock
+export LC_TIME=en_GB.UTF-8
+
+
 if [ "x$1" == "x" ] ; then
   echo "FAIL : no user passed as argumet!"
   return 1
