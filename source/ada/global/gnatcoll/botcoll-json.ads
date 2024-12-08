@@ -28,7 +28,7 @@ private with Ada.Strings.Hash;
 with Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 
-package GNATCOLL.JSON is
+package botCOLL.JSON is
 
    type JSON_Value_Type is
      (JSON_Null_Type,
@@ -289,4 +289,4 @@ private
    procedure Free is
      new Ada.Unchecked_Deallocation (Natural, Counter);
 
-end GNATCOLL.JSON;
+end botCOLL.JSON;

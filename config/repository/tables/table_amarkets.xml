@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Table Desc="collected runners " Name="AMARKETS" Tablespace="big" >
+    <Table Desc="collected runners " Name="AMARKETS" Tablespace="" >
         <Column Name="marketid"         AllowNull="0" Description="market id"/>
         <Column Name="marketname"       AllowNull="0" Description="market name"/>
         <Column Name="startts"          AllowNull="0" Description="timestamp start"/>

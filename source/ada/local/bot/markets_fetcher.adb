@@ -5,7 +5,7 @@ with Types; use Types;
 with Sql;
 with Ada.Calendar.Time_Zones;
 with Calendar2; use Calendar2;
-with Gnatcoll.Json; use Gnatcoll.Json;
+with botcoll.Json; use botcoll.Json;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Token ;
@@ -26,11 +26,11 @@ with Core_Messages;
 with Utils; use Utils;
 with Rpc ;
 with Bot_Svn_Info;
-with Ada.Directories;
+--with Ada.Directories;
 
 procedure Markets_Fetcher is
   package Ev renames Ada.Environment_Variables;
-  package Ad renames Ada.Directories;
+--  package Ad renames Ada.Directories;
   use type Sql.Transaction_Status_Type;
 
 
@@ -289,18 +289,18 @@ begin
 
   Log(Me, "Login");
 
-  -- create shm dirs
-  if not Ad.Exists("/dev/shm/bot") then
-    Ad.Create_Directory("/dev/shm/bot" );
-  end if;
-
-  if not Ad.Exists("/dev/shm/bot/win") then
-    Ad.Create_Directory("/dev/shm/bot/win" );
-  end if;
-
-  if not Ad.Exists("/dev/shm/bot/plc") then
-    Ad.Create_Directory("/dev/shm/bot/plc" );
-  end if;
+--  -- create shm dirs
+--  if not Ad.Exists("/dev/shm/bot") then
+--    Ad.Create_Directory("/dev/shm/bot" );
+--  end if;
+--
+--  if not Ad.Exists("/dev/shm/bot/win") then
+--    Ad.Create_Directory("/dev/shm/bot/win" );
+--  end if;
+--
+--  if not Ad.Exists("/dev/shm/bot/plc") then
+--    Ad.Create_Directory("/dev/shm/bot/plc" );
+--  end if;
 
 
   Rpc.Init(

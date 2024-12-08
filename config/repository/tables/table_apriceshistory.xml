@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Table Desc="runners odds during race" Name="APRICESHISTORY" Tablespace="big" >
+    <Table Desc="runners odds during race" Name="APRICESHISTORY" Tablespace="" >
         <Column Name="marketid"     AllowNull="0"  Description="market id"/>
         <Column Name="selectionid"  AllowNull="0"  Description="selection_id"/>
         <Column Name="pricets"      AllowNull="0" Description="timestamp of prices"/>

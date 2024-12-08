@@ -29,7 +29,7 @@ with Ada.Unchecked_Conversion;
 with GNAT.Encode_UTF8_String;
 with GNAT.Decode_UTF8_String;
 
-package body GNATCOLL.JSON.Utility is
+package body botCOLL.JSON.Utility is
 
    --------------------------------
    -- Escape_Non_Print_Character --
@@ -182,4 +182,4 @@ package body GNATCOLL.JSON.Utility is
       return Unb;
    end Un_Escape_String;
 
-end GNATCOLL.JSON.Utility;
+end botCOLL.JSON.Utility;

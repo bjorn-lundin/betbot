@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Table Wiz="3" Desc="Saldo" Name="ABALANCES" Tablespace="big">
+    <Table Wiz="3" Desc="Saldo" Name="ABALANCES" Tablespace="">
         <Column Name="baldate"  AllowNull="0" Description="ts of balance"/>
         <Column Name="balance"  AllowNull="0" Description="balance"/>
         <Column Name="exposure" AllowNull="0" Description="exposure"/>

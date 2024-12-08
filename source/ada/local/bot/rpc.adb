@@ -72,7 +72,7 @@ package body Rpc is
     Dummy : C.Int;
     Sig_Term : constant C.Int := 15;
     Pid : Pid_T := 0;
-    Filepath : String := (if Ev.Exists("BOT_TARGET") then Ev.Value("BOT_TARGEE") else "NONAME") ;
+    Filepath : String := (if Ev.Exists("BOT_TARGET") then Ev.Value("BOT_TARGET") else "NONAME") ;
     Filename : String := Filepath & "/befair_logon_daemon.pid" ;
     F : Text_Io.File_Type;
     Buffer : String(1..50);
@@ -127,7 +127,7 @@ package body Rpc is
 
     if Bot_User = Dry then
       declare
-        Fname : String := "/bnlbot//bnlbot/botstart/user/bnl/token.dat";
+        Fname : String := Ev.Value("BOT_ROOT") & "/user/bnl/token.dat";
       begin
         Log(Me & "Login", "dry user, use bnl's token");
         if Ada.Directories.Exists(Fname) then
@@ -296,10 +296,6 @@ package body Rpc is
     Aws_Reply           : Aws.Response.Data;
     Bot_Name            : String := (if Ev.Exists("BOT_NAME") then Ev.Value("BOT_NAME") else "NONAME") ;
     Fname               : String := Ev.Value("BOT_HOME") & "/token.dat";
-   -- F                  : Text_Io.File_Type;
-   -- Buffer             : String(1..100) := (others => ' ');
-   -- Len                : Natural := 0;
-   -- Bot_User           : String := (if Ev.Exists("BOT_USER") then Ev.Value("BOT_USER") else "NOONE") ;
 
     Rpc_Track   : Bot_Messages.Rpc_Called_Record;
   begin
@@ -329,7 +325,7 @@ package body Rpc is
                                   Timeouts     => Aws.Client.Timeouts (Each => 30.0));
     Move(Process_Io.This_Process.Name,Rpc_Track.Name);
     Rpc_Track.Typ := "O";
-   -- no data Move(Data,Rpc_Track.Data, Drop => Right);
+
     Bot_Messages.Send(Receiver => Rpc_Tracker, Data => Rpc_Track );
 
     Log(Me & "Logout", Aws.Response.Message_Body(Aws_Reply));
@@ -346,7 +342,7 @@ package body Rpc is
     Now                     : Calendar2.Time_Type := Calendar2.Clock;
     Bot_Name                : String := (if Ev.Exists("BOT_NAME") then Ev.Value("BOT_NAME") else "NONAME") ;
     Bot_User                : String := (if Ev.Exists("BOT_USER") then Ev.Value("BOT_USER") else "NOONE") ;
-    Fname                   : String := (if Bot_User = Dry then "/bnlbot/botstart/user/bnl/token.dat" else ev.Value("BOT_HOME") & "/token.dat");
+    Fname                   : String := (if Bot_User = Dry then Ev.Value("BOT_ROOT") & "/user/bnl/token.dat" else ev.Value("BOT_HOME") & "/token.dat");
     F                       : Text_Io.File_Type;
     Buffer                  : String(1..100) := (others => ' ');
     Len                     : Natural := 0;
@@ -416,7 +412,7 @@ package body Rpc is
                             Url   : in     String) is
     Aws_Reply    : Aws.Response.Data;
     Http_Headers : Aws.Headers.List := Aws.Headers.Empty_List;
-    Rpc_Track    : Bot_Messages.Rpc_Called_Record;
+--    Rpc_Track    : Bot_Messages.Rpc_Called_Record;
   begin
     Aws.Headers.Add (Http_Headers, "X-Authentication", Global_Token.Get);
     Aws.Headers.Add (Http_Headers, "X-Application", Global_Token.Get_App_Key);
@@ -431,15 +427,10 @@ package body Rpc is
                                     Headers      => Http_Headers,
                                     Timeouts     => Aws.Client.Timeouts (Each => 30.0));
 
---      Log(Me & "Get_JSON_Reply", "have posted 1");
-      Move(Process_Io.This_Process.Name,Rpc_Track.Name);
---      Log(Me & "Get_JSON_Reply", "have posted 2");
-      Rpc_Track.Typ := "D";
---      Log(Me & "Get_JSON_Reply", "have posted 3");
-      Move(S, Rpc_Track.Data, Drop => Right);
---      Log(Me & "Get_JSON_Reply", "have posted 4"); 
-      Bot_Messages.Send(Receiver => Rpc_Tracker, Data => Rpc_Track );
---      Log(Me & "Get_JSON_Reply", "have posted 5");
+--      Move(Process_Io.This_Process.Name,Rpc_Track.Name);
+--      Rpc_Track.Typ := "D";
+--      Move(S, Rpc_Track.Data, Drop => Right);
+--      Bot_Messages.Send(Receiver => Rpc_Tracker, Data => Rpc_Track );
     end;
     Log(Me & "Get_JSON_Reply", "Got reply, check it ");
 

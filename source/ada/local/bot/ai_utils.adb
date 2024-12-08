@@ -7,7 +7,7 @@ with Aws.Headers;
 with Aws.Response;
 with Aws.Client;
 
-with Gnatcoll.Json; use Gnatcoll.Json;
+with botcoll.Json; use botcoll.Json;
 with Text_io;
 with Stacktrace;
 

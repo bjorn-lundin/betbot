@@ -24,13 +24,13 @@
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Strings.Unbounded;   use Ada.Strings.Unbounded;
 with Ada.Text_IO;
-with GNATCOLL.JSON.Utility;
+with botCOLL.JSON.Utility;
 
 -------------------
 -- GNATCOLL.JSON --
 -------------------
 
-package body GNATCOLL.JSON is
+package body botCOLL.JSON is
 
    procedure Report_Error (File : String; Line, Col : Natural; Msg : String);
 
@@ -988,4 +988,4 @@ package body GNATCOLL.JSON is
       Map_JSON_Object (Val, Internal'Access);
    end Gen_Map_JSON_Object;
 
-end GNATCOLL.JSON;
+end botCOLL.JSON;

@@ -1,5 +1,13 @@
 #!/bin/bash
 
+
+TZ='Europe/Stockholm'
+export TZ
+
+#24 hr clock
+export LC_TIME=en_GB.UTF-8
+
+
 if [ "x$1" == "x" ] ; then
   echo "FAIL : no user passed as argumet!"
   return 1
@@ -9,8 +17,8 @@ BOT_USER=$1
 export BOT_USER
 
 #BOT_START is set in .bashrc
-export BOT_HOME=$BOT_START/user/$BOT_USER
-export BOT_ROOT=$BOT_START/bot-1-0
+#export BOT_ROOT=/usr2/betbot
+export BOT_HOME=$BOT_ROOT/user/$BOT_USER
 export BOT_TARGET=$BOT_ROOT/target
 export BOT_CONFIG=$BOT_ROOT/config
 export BOT_SCRIPT=$BOT_ROOT/script
@@ -20,53 +28,28 @@ export BOT_DOC=$BOT_ROOT/docbook
 export BOT_HISTORY=$BOT_ROOT/history
 export REPO_ENGINE=$BOT_TARGET/bin/repo
 
-#amazon machines starts with 'ip'
-
 HOSTNAME=$(hostname)
 case $HOSTNAME in
-  pibetbot*)
+  pibetbot)
     export BOT_MACHINE_ROLE=PROD
     export BOT_XML_SOURCE=LIB
-    export BOT_GNATCOLL_SOURCE=LOCAL
+    export BOT_MODE=real
     ;;
 
   ibmtc)
     export BOT_MACHINE_ROLE=PROD
     export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=LOCAL
+    export BOT_MODE=real
     ;;
 
-  *imac*)
+  iMac)
     export BOT_MACHINE_ROLE=SIM
     export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=LOCAL
-    ;;
-
-  *iMac*)
-    export BOT_MACHINE_ROLE=SIM
-    export BOT_XML_SOURCE=GNAT
-    export BOT_GNATCOLL_SOURCE=LOCAL
-    export ADA_PROJECT_PATH=/home/bnl/betfair/betbot/bnlbot/botstart/bot-1-0/source/ada
+    export BOT_MODE=real
     ;;
 
   *)
     export BOT_MACHINE_ROLE=$HOSTNAME
-    ;;
-esac
-
-
-case $HOSTNAME in
-  ip*)
-    export BOT_MODE=real
-    ;;
-  prod*)
-    export BOT_MODE=real
-    ;;
-  ibmtc)
-    export BOT_MODE=real
-    ;;
-
-    *)
     export BOT_MODE=simulation
     ;;
 esac

@@ -24,8 +24,8 @@ with Prices;
 with Table_Apriceshistory;
 with Bot_Svn_Info;
 with Utils; use Utils;
-with Ada.Streams;
-with Ada.Streams.Stream_IO;
+--with Ada.Streams;
+--with Ada.Streams.Stream_IO;
 
 procedure Poll_Market is
   package EV renames Ada.Environment_Variables;
@@ -48,33 +48,33 @@ procedure Poll_Market is
   Markets_Fetcher : Process_Io.Process_Type := (("markets_fetcher"),(others => ' '));
   Data : Bot_Messages.Poll_State_Record ;
 
-  Global_Cnt : Natural := 0;
+--  Global_Cnt : Natural := 0;
 
-  procedure Write_List_To_Shm(Typ : String;  Price_List : Prices.Lists.List) is
-    Path   : String := "/dev/shm/bot/" & (if Typ = "WIN" then "win" else "plc");
-    File   : Ada.Streams.Stream_Io.File_Type with Warnings => Off;
-    Stream : Ada.Streams.Stream_Io.Stream_Access;
-    Now    : Calendar2.Time_Type := Calendar2.Clock;
-    Name   : String := Now.String_Date_Time_Iso & Global_Cnt'Img;
-  begin
-    Global_Cnt := Global_Cnt +1;
-
-    for I in Name'Range loop
-      case Name(I) is
-        when ':' | ' ' | '.' | '-' => Name(I) := '_';
-        when others => null;
-      end case;
-    end loop;
-
-    Ada.Streams.Stream_Io.Create
-      (File => File,
-       Name => Path & '/' & Name & ".dat",
-       Mode => Ada.Streams.Stream_Io.Out_File);
-    Stream := Ada.Streams.Stream_Io.Stream (File);
-    Prices.Lists.List'Write(Stream, Price_List);
-    Ada.Streams.Stream_Io.Close(File);
-  end Write_List_To_Shm;
-  pragma Unreferenced(Write_List_To_Shm);
+--  procedure Write_List_To_Shm(Typ : String;  Price_List : Prices.Lists.List) is
+--    Path   : String := "/dev/shm/bot/" & (if Typ = "WIN" then "win" else "plc");
+--    File   : Ada.Streams.Stream_Io.File_Type with Warnings => Off;
+--    Stream : Ada.Streams.Stream_Io.Stream_Access;
+--    Now    : Calendar2.Time_Type := Calendar2.Clock;
+--    Name   : String := Now.String_Date_Time_Iso & Global_Cnt'Img;
+--  begin
+--    Global_Cnt := Global_Cnt +1;
+--
+--    for I in Name'Range loop
+--      case Name(I) is
+--        when ':' | ' ' | '.' | '-' => Name(I) := '_';
+--        when others => null;
+--      end case;
+--    end loop;
+--
+--    Ada.Streams.Stream_Io.Create
+--      (File => File,
+--       Name => Path & '/' & Name & ".dat",
+--       Mode => Ada.Streams.Stream_Io.Out_File);
+--    Stream := Ada.Streams.Stream_Io.Stream (File);
+--    Prices.Lists.List'Write(Stream, Price_List);
+--    Ada.Streams.Stream_Io.Close(File);
+--  end Write_List_To_Shm;
+--  pragma Unreferenced(Write_List_To_Shm);
   ----------------------------------------------------
 
 

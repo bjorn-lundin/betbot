@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <BnlBot xmlns="http://www.nonodev.com/bnlbot" xmlns:xcl="http://www.nonodev.com/bnlbot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Table Desc="collected runners " Name="AEVENTS" Tablespace="big" >
+    <Table Desc="collected runners " Name="AEVENTS" Tablespace="" >
         <Column Name="eventid"     AllowNull="0" Description="event id"/>
         <Column Name="eventname"   AllowNull="0" Description="event name"/>
         <Column Name="countrycode" AllowNull="0" Description="code of contry"/>

@@ -16,6 +16,8 @@ import sys
 hostName = ""
 serverPort = 12345
 
+BOT_ROOT='/usr2/betbot'
+
 #########################################################################
 
 # neural network class definition
@@ -100,7 +102,7 @@ class MyServer(BaseHTTPRequestHandler):
 
     def do_treat_ai_request(self, post_data) :
         #BASE = os.environ['BOT_TARGET']  no bot env here
-        BASE = '/bnlbot/bnlbot/botstart/bot-1-0/target'
+        BASE = BOT_ROOT + '/target'
         # get the JSON into dict
 #        print('post_data',post_data)
         rpc = json.loads(post_data)
@@ -111,11 +113,10 @@ class MyServer(BaseHTTPRequestHandler):
         params = rpc['params']
 
         # interpret what pickle to load
-                
+
         if params['useWinMarketName'] :
             if os.path.exists(BASE + params['winMarketName']) :
                 BASE = BASE + '/' + params['winMarketName']
-        
 
         pickle_file_root = BASE + '/pickles'
         pickle_file =  "/" + params['betType']
@@ -163,24 +164,6 @@ class MyServer(BaseHTTPRequestHandler):
         num_from_leader = params['numFromLeader']
 
         label = -1
-#bnl        if num_from_leader > 0 :
-#bnl            cnt = num_from_leader
-#bnl            while cnt > 0 :
-#bnl                #remove the current leader and go for next
-#bnl#                print('cnt',cnt)
-#bnl                label = numpy.argmax(outputs)
-#bnl#                print('reset label',label,' was outputs[label]' ,outputs[label])
-#bnl                outputs[label] = 0.01
-#bnl                cnt = cnt -1
-#bnl
-#bnl            label = numpy.argmax(outputs)
-#bnl#            print('label_', label, 'outputs[label]', outputs[label])
-#bnl
-#bnl
-#bnl        elif num_from_leader == 0 :
-#bnl            # the index of the highest value corresponds to the label
-#bnl            label = numpy.argmax(outputs)
-#bnl#            print('label0', label, 'outputs[label]', outputs[label])
 
         tmp_outputs=[]
         for elem in outputs:
@@ -246,13 +229,9 @@ class MyServer(BaseHTTPRequestHandler):
         elif 'Grappe' in post_data:
           user = 'msm'
 
-
-        cert_path_prefix = os.getenv('BOT_START')
-        if cert_path_prefix is None :
-           cert_path_prefix = '/bnlbot/bnlbot/botstart'
-
-        cert_path = cert_path_prefix + '/user/' + user + '/certificates'
-
+        cert_path = BOT_ROOT + '/user/' + user + '/certificates'
+        logging.info('user %s', user)
+        logging.info('cert_path %s', cert_path)
 
         if not os.path.exists(cert_path + '/client-2048.crt') :
            self.send_response(200)
@@ -266,8 +245,6 @@ class MyServer(BaseHTTPRequestHandler):
 
 
 
-        logging.info('user %s', user)
-        logging.info('cert_path %s', cert_path)
 
         headers = {'X-Application': self.headers['X-Application'],
            'Content-Type': self.headers['Content-Type'],
@@ -296,6 +273,8 @@ class MyServer(BaseHTTPRequestHandler):
            self.wfile.write(response.getvalue())
            logging.warning("Post request error")
            logging.warning('resp_json', resp_json)
+           
+######################################################################           
 
       elif self.path == '/AI':
         # get the request from the betbot
@@ -327,12 +306,12 @@ class MyServer(BaseHTTPRequestHandler):
 webServer = HTTPServer((hostName, serverPort), MyServer)
 print("Server started http://%s:%s" % (hostName, serverPort))
 
-logging.basicConfig(filename='/bnlbot/bnlbot/botstart/bot-1-0/target/log/python_login_service.log', level=logging.INFO,format='%(asctime)s %(message)s')
+logging.basicConfig(filename=BOT_ROOT + '/target/log/python_login_service.log', level=logging.INFO,format='%(asctime)s %(message)s')
 
 pid = os.getpid()
 print('pid',pid)
 
-with open("/bnlbot/bnlbot/botstart/bot-1-0/target/befair_logon_daemon.pid", "w") as file1:
+with open(BOT_ROOT + "/target/befair_logon_daemon.pid", "w") as file1:
     # Writing data to a file
     file1.write(str(pid) + "\n")
 
