@@ -17,10 +17,6 @@
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
 
-#exit 0
-
-
-
 echo "start new file" > /usr2/kba.log
 
 function log () {
@@ -248,6 +244,7 @@ function Check_System_Bots_For_User () {
 ##
 
 function Create_Plots () {
+  return 
   USR=$1
   DAYS=$2
   TS=$(date +"%Y-%m-%d %T")
@@ -466,9 +463,9 @@ if [ $MINUTE == "20" ] ; then
   $BOT_SCRIPT/bash/duckdns.bash ; # update dyndns once per hour
 fi
 
-TEMP=$(cat /sys/class/thermal/thermal_zone0/temp)
-TEMP=$(($TEMP/1000))
-echo "$(date -Is) $TEMP" >> $BOT_START/data/temperaturelog/$(date +%F)-temperature.dat
+#TEMP=$(cat /sys/class/thermal/thermal_zone0/temp)
+#TEMP=$(($TEMP/1000))
+#echo "$(date -Is) $TEMP" >> $BOT_START/data/temperaturelog/$(date +%F)-temperature.dat
 
 PCT="/tmp/percent.tcl"
 echo 'puts [expr [lindex $argv 0] * 100  / [lindex $argv 1]]' > $PCT
@@ -483,7 +480,7 @@ ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 MAIL_LIST="b.f.lundin@gmail.com"
 
 #DISK_LIST="sda1 sda3 root"
-DISK_LIST="sda1"
+DISK_LIST="rl_ibmtc-root"
 
 for DISK in $DISK_LIST ; do
   USED_SIZE=$( df  | grep $DISK | awk '{print $3}')

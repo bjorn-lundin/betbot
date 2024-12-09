@@ -400,7 +400,7 @@ procedure Poll is
     if Reply.Has_Field("error") then
       Error := Reply.Get("error");
       if Error.Has_Field("message") then
-        Log("Try_To_Make_Back_Bet_Ai -error.message " , Error.Get("code"));
+        Log("Try_To_Make_Back_Bet_Ai -error.message " , Error.Get("message"));
       end if;
       Log("Try_To_Make_Back_Bet_Ai " , "no bet placed");
       return;
