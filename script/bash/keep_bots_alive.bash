@@ -107,7 +107,7 @@ function Check_Bots_For_User () {
 #  log "will run $BOT_ROOT/bot.bash $BOT_USER"
   . $BOT_ROOT/bot.bash $BOT_USER
 
-  /usr/bin/env  >> /usr2/kba.log
+#  /usr/bin/env  >> /usr2/kba.log
 
   #No login file -> give up
   [ ! -r $BOT_HOME/login.ini ] && return 0
@@ -237,14 +237,12 @@ function Check_System_Bots_For_User () {
   if [ $BOT_MINUTE == "17" ] ; then
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
-
-
 }
 
-##
+##################
 
 function Create_Plots () {
-  return
+
   USR=$1
   DAYS=$2
   TS=$(date +"%Y-%m-%d %T")
@@ -426,25 +424,18 @@ case $BOT_MACHINE_ROLE in
 
     for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
-      if [ $HOUR == "12" ] ; then
-        if [ $MINUTE == "24" ] ; then
-          #Create_Plots $USR 7
-          Create_Plots $USR 42
-        fi
-      fi
-      if [ $HOUR == "19" ] ; then
-        if [ $MINUTE == "10" ] ; then
-          #Create_Plots $USR 7
-          Create_Plots $USR 42
-        fi
-      fi
-      if [ $HOUR == "23" ] ; then
-        if [ $MINUTE == "01" ] ; then
-          #Create_Plots $USR 7
-          Create_Plots $USR 42
-        fi
-      fi
 
+       case $HOUR in
+         "00" | "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11" | "12" | "13" | "14" | "15")
+           return
+         ;;
+         *)
+            if [ $MINUTE == "55" ] ; then
+              #Create_Plots $USR 7
+              Create_Plots $USR 42
+            fi
+         ;;
+        esac
       # was lock in db held by dead? psql check_stuck_markets_fetcher
     done
 
@@ -463,9 +454,9 @@ if [ $MINUTE == "20" ] ; then
   $BOT_SCRIPT/bash/duckdns.bash ; # update dyndns once per hour
 fi
 
-#TEMP=$(cat /sys/class/thermal/thermal_zone0/temp)
-#TEMP=$(($TEMP/1000))
-#echo "$(date -Is) $TEMP" >> $BOT_ROOT/data/temperaturelog/$(date +%F)-temperature.dat
+# TEMP=$(cat /sys/class/thermal/thermal_zone0/temp)
+# TEMP=$(($TEMP/1000))
+# echo "$(date -Is) $TEMP" >> $BOT_ROOT/data/temperaturelog/$(date +%F)-temperature.dat
 
 PCT="/tmp/percent.tcl"
 echo 'puts [expr [lindex $argv 0] * 100  / [lindex $argv 1]]' > $PCT
