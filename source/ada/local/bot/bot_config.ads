@@ -52,8 +52,8 @@ package Bot_Config is
   package Bet_Pack is new Ada.Containers.Doubly_Linked_Lists(Bet_Section_Type);
 
   type System_Section_Type is record
-    -- BOT_START is set in .bashrc
-    Bot_Root   : Unbounded_String := Null_Unbounded_String ; --  =$BOT_START/bot-0-9
+    -- BOT_ROOT is set in bashrc.bash
+    Bot_Root   : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT
     Bot_Config : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/config
     Bot_Target : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/target
     Bot_Source : Unbounded_String := Null_Unbounded_String ; --  =$BOT_ROOT/source
