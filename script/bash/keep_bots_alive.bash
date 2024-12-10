@@ -17,10 +17,10 @@
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
 
-echo "start new file" > /usr2/kba.log
+#echo "start new file" > /usr2/kba.log
 
 function log () {
-#  return ""
+  return
   echo "$(date) : $1"
   echo "$(date) : $1" >> /usr2/kba.log
 }
@@ -33,7 +33,7 @@ export TZ
 
 /usr/bin/env >> /usr2/kba.log
 
-log "BOT_ROOT -  ${BOT_ROOT}"
+#log "BOT_ROOT -  ${BOT_ROOT}"
 
 date +"%Y-%m-%d %H:%M:%S" > ${BOT_ROOT}/last_run_keeep_alive.dat
 
@@ -100,11 +100,11 @@ function Check_Bots_For_User () {
     ;;
   esac
 
-  log "BOT_USER $BOT_USER"
-  log "BOT_WEEK_DAY $BOT_WEEK_DAY"
-  log "BOT_HOUR $BOT_HOUR"
-  log "BOT_MINUTE $BOT_MINUTE"
-  log "will run $BOT_ROOT/bot.bash $BOT_USER"
+#  log "BOT_USER $BOT_USER"
+#  log "BOT_WEEK_DAY $BOT_WEEK_DAY"
+#  log "BOT_HOUR $BOT_HOUR"
+#  log "BOT_MINUTE $BOT_MINUTE"
+#  log "will run $BOT_ROOT/bot.bash $BOT_USER"
   . $BOT_ROOT/bot.bash $BOT_USER
 
   /usr/bin/env  >> /usr2/kba.log
