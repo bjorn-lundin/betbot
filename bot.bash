@@ -16,7 +16,7 @@ fi
 BOT_USER=$1
 export BOT_USER
 
-#BOT_START is set in .bashrc
+#BOT_ROOT is set in .bashrc
 #export BOT_ROOT=/usr2/betbot
 export BOT_HOME=$BOT_ROOT/user/$BOT_USER
 export BOT_TARGET=$BOT_ROOT/target

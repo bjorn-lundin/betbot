@@ -17,10 +17,10 @@
 #if we should NOT start it, check here.
 #if /var/lock/bot is exists, then exit. created/removed from /etc/init.d/bot
 
-echo "start new file" > /usr2/kba.log
+#echo "start new file" > /usr2/kba.log
 
 function log () {
-#  return ""
+  return
   echo "$(date) : $1"
   echo "$(date) : $1" >> /usr2/kba.log
 }
@@ -33,7 +33,7 @@ export TZ
 
 /usr/bin/env >> /usr2/kba.log
 
-log "BOT_ROOT -  ${BOT_ROOT}"
+#log "BOT_ROOT -  ${BOT_ROOT}"
 
 date +"%Y-%m-%d %H:%M:%S" > ${BOT_ROOT}/last_run_keeep_alive.dat
 
@@ -100,14 +100,14 @@ function Check_Bots_For_User () {
     ;;
   esac
 
-  log "BOT_USER $BOT_USER"
-  log "BOT_WEEK_DAY $BOT_WEEK_DAY"
-  log "BOT_HOUR $BOT_HOUR"
-  log "BOT_MINUTE $BOT_MINUTE"
-  log "will run $BOT_ROOT/bot.bash $BOT_USER"
+#  log "BOT_USER $BOT_USER"
+#  log "BOT_WEEK_DAY $BOT_WEEK_DAY"
+#  log "BOT_HOUR $BOT_HOUR"
+#  log "BOT_MINUTE $BOT_MINUTE"
+#  log "will run $BOT_ROOT/bot.bash $BOT_USER"
   . $BOT_ROOT/bot.bash $BOT_USER
 
-  /usr/bin/env  >> /usr2/kba.log
+#  /usr/bin/env  >> /usr2/kba.log
 
   #No login file -> give up
   [ ! -r $BOT_HOME/login.ini ] && return 0
@@ -166,7 +166,7 @@ function Check_System_Bots_For_User () {
   BOT_HOUR=$3
   BOT_MINUTE=$4
 
-  . $BOT_START/bot.bash $BOT_USER
+  . $BOT_ROOT/bot.bash $BOT_USER
   #No login file -> give up
   [ ! -r $BOT_HOME/login.ini ] && return 0
 
@@ -237,19 +237,17 @@ function Check_System_Bots_For_User () {
   if [ $BOT_MINUTE == "17" ] ; then
     tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
-
-
 }
 
-##
+##################
 
 function Create_Plots () {
-  return 
+
   USR=$1
   DAYS=$2
   TS=$(date +"%Y-%m-%d %T")
 
-  . $BOT_START/bot.bash $USR
+  . $BOT_ROOT/bot.bash $USR
 
   #echo "create plots"
   STRATEGIES=$(${BOT_TARGET}/bin/graph_data --print_strategies)
@@ -262,11 +260,11 @@ function Create_Plots () {
 
     strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
     #create datafiles
-    ${BOT_TARGET}/bin/graph_data --betname=${S} --lapsed --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/settled_vs_lapsed_${DAYS}_${strategy}.dat 2>/dev/null
-    ${BOT_TARGET}/bin/graph_data --betname=${S} --profit --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/profit_vs_matched_${DAYS}_${strategy}.dat 2>/dev/null
-    ${BOT_TARGET}/bin/graph_data --betname=${S} --avg_price --days=${DAYS} > ${BOT_START}/user/${USR}/gui_related/avg_price_${DAYS}_${strategy}.dat 2>/dev/null
+    ${BOT_TARGET}/bin/graph_data --betname=${S} --lapsed --days=${DAYS} > ${BOT_ROOT}/user/${USR}/gui_related/settled_vs_lapsed_${DAYS}_${strategy}.dat 2>/dev/null
+    ${BOT_TARGET}/bin/graph_data --betname=${S} --profit --days=${DAYS} > ${BOT_ROOT}/user/${USR}/gui_related/profit_vs_matched_${DAYS}_${strategy}.dat 2>/dev/null
+    ${BOT_TARGET}/bin/graph_data --betname=${S} --avg_price --days=${DAYS} > ${BOT_ROOT}/user/${USR}/gui_related/avg_price_${DAYS}_${strategy}.dat 2>/dev/null
     #put it in wd of gnuplot
-    cp ${BOT_START}/user/${USR}/gui_related/*.dat ./
+    cp ${BOT_ROOT}/user/${USR}/gui_related/*.dat ./
     DF1="settled_vs_lapsed_${DAYS}_${strategy}"
     gnuplot \
       -e "data_file='$DF1'" \
@@ -297,7 +295,7 @@ function Create_Plots () {
     for S in $STRATEGIES ; do
 
       strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
-      DATA_FILE=${BOT_START}/user/${USR}/gui_related/${strategy}.dat
+      DATA_FILE=${BOT_ROOT}/user/${USR}/gui_related/${strategy}.dat
       ${BOT_TARGET}/bin/graph_data --startdate="2018-11-01" --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
       FILES="${FILES} ${DATA_FILE}"
 
@@ -320,7 +318,7 @@ function Create_Plots () {
   fi
   #move to user area and cleanup, and to web server
   rm *.dat
-  cp *.png ${BOT_START}/user/${USR}/gui_related/
+  cp *.png ${BOT_ROOT}/user/${USR}/gui_related/
   rm *.png
   cd ${old_pwd}
 }
@@ -426,25 +424,18 @@ case $BOT_MACHINE_ROLE in
 
     for USR in $USER_LIST_PLAYERS_ONLY ; do
       Check_Bots_For_User $USR $WEEK_DAY $HOUR $MINUTE
-      if [ $HOUR == "12" ] ; then
-        if [ $MINUTE == "24" ] ; then
-          #Create_Plots $USR 7
-          Create_Plots $USR 42
-        fi
-      fi
-      if [ $HOUR == "19" ] ; then
-        if [ $MINUTE == "10" ] ; then
-          #Create_Plots $USR 7
-          Create_Plots $USR 42
-        fi
-      fi
-      if [ $HOUR == "23" ] ; then
-        if [ $MINUTE == "01" ] ; then
-          #Create_Plots $USR 7
-          Create_Plots $USR 42
-        fi
-      fi
 
+       case $HOUR in
+         "00" | "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11" | "12" | "13" | "14" | "15")
+           return
+         ;;
+         *)
+            if [ $MINUTE == "55" ] ; then
+              #Create_Plots $USR 7
+              Create_Plots $USR 42
+            fi
+         ;;
+        esac
       # was lock in db held by dead? psql check_stuck_markets_fetcher
     done
 
@@ -463,9 +454,9 @@ if [ $MINUTE == "20" ] ; then
   $BOT_SCRIPT/bash/duckdns.bash ; # update dyndns once per hour
 fi
 
-#TEMP=$(cat /sys/class/thermal/thermal_zone0/temp)
-#TEMP=$(($TEMP/1000))
-#echo "$(date -Is) $TEMP" >> $BOT_START/data/temperaturelog/$(date +%F)-temperature.dat
+# TEMP=$(cat /sys/class/thermal/thermal_zone0/temp)
+# TEMP=$(($TEMP/1000))
+# echo "$(date -Is) $TEMP" >> $BOT_ROOT/data/temperaturelog/$(date +%F)-temperature.dat
 
 PCT="/tmp/percent.tcl"
 echo 'puts [expr [lindex $argv 0] * 100  / [lindex $argv 1]]' > $PCT
@@ -518,7 +509,7 @@ case $HOUR  in
   "12"| "13" | "14" | "15" | "16" | "17" | "18" | "19" | "20" | "21" | "22" | "23")
    # do checks
 
-    . $BOT_START/bot.bash bnl
+    . $BOT_ROOT/bot.bash bnl
     psql --command="select * from AEVENTS where COUNTRYCODE='ww'" --quiet --tuples-only >/dev/null
     R=$?
     DAY2_FILE=$(date +"%F")

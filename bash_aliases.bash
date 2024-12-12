@@ -49,7 +49,7 @@ alias stop_poll='$BOT_TARGET/bin/bot_send --receiver=poll_01 --message=exit && \
 #alias stop_live_feed='$BOT_TARGET/bin/bot_send --receiver=live_feed --message=exit'
 
 alias stop_w_fetch_json='$BOT_TARGET/bin/bot_send --receiver=w_fetch_json --message=exit'
-                     
+
 alias stop_all_dogs='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=gh_mark_fetcher --message=exit && \
                      $BOT_TARGET/bin/bot_send --receiver=gh_poll_1 --message=exit && \
@@ -65,7 +65,7 @@ alias stop_all_dogs='$BOT_TARGET/bin/bot_send --receiver=bet_checker --message=e
 
 alias crp='$BOT_SCRIPT/bash/crp.bash'
 
-alias chguser='. $BOT_START/bot.bash $1'
+alias chguser='. $BOT_ROOT/bot.bash $1'
 
 alias awspsql='psql --host=lundin.duckdns.org --dbname=bnl'
 
@@ -80,18 +80,16 @@ alias stop_all_collectors='$BOT_TARGET/bin/bot_send --receiver=poll_market_1 --m
                            $BOT_TARGET/bin/bot_send --receiver=poll_market_8 --message=exit'
 
 
-                           
-                           
+
 #function stop_bots  {
 #  while read line
 #  do
-#    if [ ! -z $line ] ; then 
+#    if [ ! -z $line ] ; then
 #      echo "$line"
 #    fi
-#  done 
+#  done
 #}  < crp | awk '{print $9}'
 
-                     
 
 alias stop_all_bet_placers='$BOT_TARGET/bin/bot_send --receiver=bet_placer_001 --message=exit && \
                             $BOT_TARGET/bin/bot_send --receiver=bet_placer_002 --message=exit && \
