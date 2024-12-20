@@ -157,7 +157,7 @@ procedure Poll_Market is
       end if;
 
       if not Has_Been_In_Play then
-        if Current_Turn_Not_Started_Race >= Integer_4(1000) then
+        if Current_Turn_Not_Started_Race >= Integer_4(4000) then
            Log(Me & "Make_Bet", "Market took too long time to start, give up");
            exit Poll_Loop;
         else

@@ -354,8 +354,7 @@ procedure Poll is
         Append(Odds,Create(Float'Value(Utils.F8_Image(Price))));
       end loop;
     end if;
-    
-    
+
     for i in Market_Name'range loop
       case Market_Name(i) is
         when ' '    => Market_Name(i) := '_' ;
