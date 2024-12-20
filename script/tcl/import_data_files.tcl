@@ -71,7 +71,7 @@ proc Is_To_Be_Imported {f} {
 
     */dry_* {
             switch -glob $f {
-              *apriceshistory* {set Import 1}
+              *apriceshistory* {set Import 0}
               *abalance*       {set Import 0}
               default          {set Import 0}
             }
@@ -125,7 +125,16 @@ set YEAR [lindex $::argv 0]
 set MONTH [lindex $::argv 1]
 set DAY [lindex $::argv 2]
 
-Traverse_Directories [file join / home bnl betfair data db_dumps $YEAR $MONTH $DAY]
+
+if { ($DAY == "0") && ($MONTH == "0") } {
+  Traverse_Directories [file join / usr2 data db_dumps $YEAR]
+} elseif  { $DAY == "0" } {
+  Traverse_Directories [file join / usr2 data db_dumps $YEAR $MONTH]
+} else {
+  Traverse_Directories [file join / usr2 data db_dumps $YEAR $MONTH $DAY]
+}
+
+#Traverse_Directories [file join / usr2 data db_dumps $YEAR $MONTH $DAY]
 cd $This_Pwd
 #Dbg "Stop"
 
