@@ -85,10 +85,8 @@ procedure Saldo_Fetcher is
 
       SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
                                   (SMTP_Server_Name,
-                                --   Port       => 587,
-                                   Port       => 465,
-                                 Security   => smtp.starttls,
-                                 --  Secure     => True,
+                                   Port       => 587,
+                                   Security   => smtp.starttls,
                                    Credential => Auth'Unchecked_Access);
       use Ada.Characters.Latin_1;
       Today     : Fixed_Type := Saldo.Balance + abs(Saldo.Exposure);

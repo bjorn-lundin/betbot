@@ -99,9 +99,7 @@ procedure Aws_Mail is
       declare
         SMTP_Server : SMTP.Receiver := SMTP.Client.Initialize
           (SMTP_Server_Name,
---           Port       => 587,
-           Port       => 465,
-           --Secure     => True,
+           Port       => 587,
            Security   => smtp.starttls,
            Credential => Auth'Unchecked_Access);
       begin
