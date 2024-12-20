@@ -31,7 +31,7 @@ log "start"
 TZ='Europe/Stockholm'
 export TZ
 
-/usr/bin/env >> /usr2/kba.log
+#/usr/bin/env >> /usr2/kba.log
 
 #log "BOT_ROOT -  ${BOT_ROOT}"
 
@@ -39,7 +39,7 @@ date +"%Y-%m-%d %H:%M:%S" > ${BOT_ROOT}/last_run_keeep_alive.dat
 
 . ${BOT_ROOT}/bot.bash bnl
 
-date +"%Y-%m-%d %H:%M:%S" > ${BOT_SCRIPT}/bash/last_run_keeep_alive.dat
+#date +"%Y-%m-%d %H:%M:%S" > ${BOT_SCRIPT}/bash/last_run_keeep_alive.dat
 
 
 function Start_Bot () {
@@ -73,7 +73,7 @@ function Start_Bot () {
   RESULT=$?
   if [ $RESULT -eq 0 ] ; then
     echo "--------------------------------"
-    echo "will run '$BOT_NAME'"
+#    echo "will run '$BOT_NAME'"
     echo "will run $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE"
     export BOT_NAME=$BOT_NAME
     $BOT_TARGET/bin/$EXE_NAME --daemon --user=$BOT_USER $INI_NAME $MODE
@@ -119,8 +119,8 @@ function Check_Bots_For_User () {
   #MODE=$5
   #all need this one
 
-  Start_Bot $BOT_USER rpc_tracker rpc_tracker
-  sleep 2
+ # Start_Bot $BOT_USER rpc_tracker rpc_tracker
+ # sleep 2
   Start_Bot $BOT_USER login_handler login_handler
   sleep 2
   Start_Bot $BOT_USER markets_fetcher markets_fetcher
@@ -152,7 +152,8 @@ function Check_Bots_For_User () {
 
   #zip logfiles every hour, on minute 17 in the background
   if [ $BOT_MINUTE == "17" ] ; then
-    tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
+    # run with very low ioprio
+    nice -n 19 ionice -c 3 tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
 
 }
@@ -235,7 +236,7 @@ function Check_System_Bots_For_User () {
 
   #zip logfiles every hour, on minute 17 in the background
   if [ $BOT_MINUTE == "17" ] ; then
-    tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
+    nice -n 19 ionice -c 3 tclsh $BOT_SCRIPT/tcl/move_or_zip_old_logfiles.tcl $BOT_USER &
   fi
 }
 
@@ -427,7 +428,7 @@ case $BOT_MACHINE_ROLE in
 
        case $HOUR in
          "00" | "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11" | "12" | "13" | "14" | "15")
-           return
+           :
          ;;
          *)
             if [ $MINUTE == "55" ] ; then
@@ -447,7 +448,8 @@ case $BOT_MACHINE_ROLE in
   ;;
   *)
   #do nothing on non-PROD hosts
-  exit 0 ;;
+    exit 0
+  ;;
 esac
 
 if [ $MINUTE == "20" ] ; then
