@@ -7,7 +7,7 @@ with w as
   betwon as bww
 from abets b, aprices p
 where 1=1
-and b.betplaced::date >= '2024-11-11'
+and b.betplaced::date >= '2024-11-20'
 and b.betname like 'HORSE_BACK_AI_%'
 and b.marketid = p.marketid
 and b.selectionid = p.selectionid
@@ -24,7 +24,7 @@ betname as bnl,
 betwon as bwl
 from abets b, aprices p
 where 1=1
-and b.betplaced::date >= '2024-12-01'
+and b.betplaced::date >= '2024-11-20'
 and b.betname like 'HORSE_BACK_AI_%'
 and b.marketid = p.marketid
 and b.selectionid = p.selectionid
