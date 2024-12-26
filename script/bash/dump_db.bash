@@ -1,4 +1,5 @@
 #!/bin/bash
+exit 0
 export PATH=/bin:/usr/bin:$PATH
 TZ='Europe/Stockholm'
 export TZ
@@ -17,12 +18,13 @@ function create_dump () {
 
   [ ! -d $TARGET_DIR ] && mkdir -p $TARGET_DIR
 
-  DB_LIST="bnl dry jmb msm"
+#  DB_LIST="bnl dry jmb msm"
+  DB_LIST="bnl dry"
   TABLE_LIST="aevents amarkets aprices apriceshistory arunners abets abalances"
 
   for DBNAME in ${DB_LIST} ; do
     for TABLE in ${TABLE_LIST} ; do
-      pg_dump --schema-only --dbname=${DBNAME} --table=${TABLE} > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}_schema.dmp
+      #pg_dump --schema-only --dbname=${DBNAME} --table=${TABLE} > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}_schema.dmp
       #pg_dump --data-only  --dbname=${DBNAME} --table=${TABLE} | gzip > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}.tar.gz
       pg_dump --data-only  --dbname=${DBNAME} --table=${TABLE} | gzip > ${TARGET_DIR}/${DBNAME}_${YEAR}_${MONTH}_${DATE}_${TABLE}.zip
 
@@ -48,7 +50,7 @@ function create_dump () {
 #exit 0
 
 #make dumps to an existing directory and stop
-[ -d /bnlbot/botstart/data ] && create_dump /bnlbot/botstart/data/db_dumps && exit 0
-[ -d /home/bnl/data ] && create_dump /home/bnl/data/db_dumps && exit 0
-[ -d /data ] && create_dump /data/db_dumps && exit 0
-[ -d /bnlbot/bnlbot/botstart/data ] && create_dump /bnlbot/bnlbot/botstart/data/db_dumps && exit 0
+[ -d /usr2/data ] && create_dump /usr2/data/db_dumps && exit 0
+#[ -d /home/bnl/data ] && create_dump /home/bnl/data/db_dumps && exit 0
+#[ -d /data ] && create_dump /data/db_dumps && exit 0
+#[ -d /bnlbot/bnlbot/botstart/data ] && create_dump /bnlbot/bnlbot/botstart/data/db_dumps && exit 0
