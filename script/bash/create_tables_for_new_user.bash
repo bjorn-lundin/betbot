@@ -6,9 +6,9 @@
  $BOT_TARGET/bin/repo --postgresql=amarkets      >> tbl.sql
  $BOT_TARGET/bin/repo --postgresql=aprices       >> tbl.sql
  $BOT_TARGET/bin/repo --postgresql=arunners      >> tbl.sql
- $BOT_TARGET/bin/repo --postgresql=astarttimes   >> tbl.sql
-$BOT_TARGET/bin/repo --postgresql=okmarkets   >> tbl.sql
-$BOT_TARGET/bin/repo --postgresql=arewards   >> tbl.sql
+# $BOT_TARGET/bin/repo --postgresql=astarttimes   >> tbl.sql
+#$BOT_TARGET/bin/repo --postgresql=okmarkets   >> tbl.sql
+#$BOT_TARGET/bin/repo --postgresql=arewards   >> tbl.sql
 echo ""                                       >> tbl.sql
 echo "begin;"                                 >> tbl.sql
 echo "CREATE SEQUENCE bet_id_serial "         >> tbl.sql
