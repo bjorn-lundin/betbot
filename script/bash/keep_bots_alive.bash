@@ -297,7 +297,7 @@ function Create_Plots () {
 
       strategy=$(echo ${S} | tr '[:upper:]' '[:lower:]')
       DATA_FILE=${BOT_ROOT}/user/${USR}/gui_related/${strategy}.dat
-      ${BOT_TARGET}/bin/graph_data --startdate="2018-11-01" --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
+      ${BOT_TARGET}/bin/graph_data --startdate="2024-11-20" --equity  --betname=${S}  > ${DATA_FILE} 2>/dev/null
       FILES="${FILES} ${DATA_FILE}"
 
       #one plot for each:
@@ -431,7 +431,7 @@ case $BOT_MACHINE_ROLE in
            :
          ;;
          *)
-            if [ $MINUTE == "55" ] ; then
+            if [ $MINUTE == "59" ] ; then
               #Create_Plots $USR 7
               Create_Plots $USR 42
             fi
@@ -452,7 +452,7 @@ case $BOT_MACHINE_ROLE in
   ;;
 esac
 
-if [ $MINUTE == "20" ] ; then
+if [ $MINUTE == "01" ] ; then
   $BOT_SCRIPT/bash/duckdns.bash ; # update dyndns once per hour
 fi
 
@@ -537,6 +537,51 @@ case $HOUR  in
     done
   ;;
 esac
+
+# update the 'profit' of the AI bets
+if [ $HOUR == "22" ] ; then
+  if [ $MINUTE == "56" ] ; then
+     psql --dbname=bnl --command="
+with the_bets as (
+  select b.betname, p.marketid, p.selectionid, p.backprice, p.layprice
+  from abets b, aprices p
+  where 1=1
+  and b.marketid = p.marketid
+  and b.selectionid = p.selectionid
+  and b.betname like 'HORSE_BACK_AI%'
+)
+update abets
+set price = (
+  case
+    when side = 'BACK' then the_bets.backprice
+    when side = 'LAY' then the_bets.layprice
+  end)
+  ,
+  pricematched = (
+  case
+    when side = 'BACK' then the_bets.backprice
+    when side = 'LAY' then the_bets.layprice
+  end),
+  profit = (
+  case
+    when side = 'BACK' then
+	  case
+            when betwon then (size * (the_bets.backprice -1.0)) else -size
+          end
+    when side = 'LAY'  then
+	  case
+            when betwon then size  else (-size *(the_bets.layprice -1.0))
+          end
+  end),
+  status = 'SETTLED'
+from the_bets
+where abets.marketid = the_bets.marketid
+and abets.selectionid = the_bets.selectionid
+and abets.betname = the_bets.betname ; commit; "
+
+  fi
+fi
+
 
 
 log "stop"
