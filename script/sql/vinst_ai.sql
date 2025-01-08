@@ -44,16 +44,16 @@ select
   round(100.0*( (( ssw * aw2 * 0.95) - coalesce(ssl,0)) / (coalesce(ssw,0) + coalesce(ssl,0) )),1) as riskrate,
   coalesce(cw,0) as cw,
   coalesce(cl,0) as cl,
-  round(coalesce(aw,1.0),2) as aw,
-  round(coalesce(al,1.0),2) as al,
-  round(coalesce(aw,1.0),2) as aw2,
-  round(coalesce(al,1.0),2) as al2,
-  coalesce(ow,1.0) as ow,
-  coalesce(ol,1.0) as ol,
-  coalesce(ssw,1.0) as ssw,
-  coalesce(ssl,1.0) as ssl,
-  round(ssw * aw2 * 0.95,0) as grossprofit,
-  round(coalesce(ssl,0) ,0) as grossloss
+  round(coalesce(aw,1.0),2) as aw --,
+  --round(coalesce(al,1.0),2) as al,
+  --round(coalesce(aw,1.0),2) as aw2,
+  --round(coalesce(al,1.0),2) as al2,
+  --coalesce(ow,1.0) as ow,
+  --coalesce(ol,1.0) as ol,
+  --coalesce(ssw,1.0) as ssw,
+  --coalesce(ssl,1.0) as ssl,
+  --round(ssw * aw2 * 0.95,0) as grossprofit,
+  --round(coalesce(ssl,0) ,0) as grossloss
 from w
 full outer join l on w.bnw = l.bnl
 order by 2 desc
