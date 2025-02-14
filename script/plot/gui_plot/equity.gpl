@@ -18,6 +18,7 @@ set title "Equity for strategies for user \n" . user . " : " . ts
 set y2tics 
 set ylabel "kr"
 set y2label "kr"
+set link y2 
 
 set xdata time
 set timefmt  "%Y-%m-%d %H:%M:%S"
