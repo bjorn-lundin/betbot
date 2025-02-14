@@ -399,7 +399,9 @@ DAY=$(date +"%d")
 #bnl      25962 25954  0 14:20 pts/0    00:00:02 /bin/nano /bnlbot/botstart/bot-1-0/script/bash/keep_bots_alive.bash
 #bnl      30625 25671  0 14:35 pts/2    00:00:00 grep --color=auto keep_bots_alive.bash
 
-NUM_RUNNING=$(ps -ef | grep -v grep | grep /bin/sh | grep -v sensible-editor | grep -c keep_bots_alive.bash)
+#kill the defunct ones
+ps -ef | grep '<defunct>' | grep -v grep | awk '{print "sudo kill -9 ",$3}' | sh
+NUM_RUNNING=$(ps -ef | grep -v grep | grep /bin/sh | grep -v sensible-editor | grep -v defunct | grep -c keep_bots_alive.bash)
 log "NUM_RUNNING: $NUM_RUNNING $(date)"
 
 if [ $NUM_RUNNING -gt 1 ] ; then
@@ -523,6 +525,7 @@ case $HOUR  in
         #  echo "db seems to be down, psql does not get access to BNL" | mail --subject="is db up and running on $(hostname) ?" $RECIPENT
           echo "db seems to be down, psql does not get access to BNL" | $BOT_TARGET/bin/aws_mail --subject="is db up and running on $(hostname) ?"
           touch ${DB_ALARM_TODAY_FILE}
+          sudo systemctl restart postgresql
         fi
       done
     fi
@@ -539,8 +542,7 @@ case $HOUR  in
 esac
 
 # update the 'profit' of the AI bets
-if [ $HOUR == "22" ] ; then
-  if [ $MINUTE == "56" ] ; then
+if [ $MINUTE == "58" ] ; then
      psql --dbname=bnl --command="
 with the_bets as (
   select b.betname, p.marketid, p.selectionid, p.backprice, p.layprice
@@ -577,11 +579,10 @@ set price = (
 from the_bets
 where abets.marketid = the_bets.marketid
 and abets.selectionid = the_bets.selectionid
-and abets.betname = the_bets.betname ; commit; "
+and abets.betname = the_bets.betname
+and abets.status <> 'SETTLED'; commit; "
 
-  fi
 fi
-
 
 
 log "stop"
