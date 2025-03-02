@@ -19,3 +19,5 @@ source/ada/bot_ws/html/msm
 source/ada/global/c_constants.ads
 source/ada/global/tables/
 source/ada/make.log
+sslcert/web_sessions.dat
+
