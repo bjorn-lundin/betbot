@@ -420,14 +420,15 @@ procedure Poll is
           Send_Back_Bet(Selectionid     => Br(Integer(Idx)).Selectionid,
                         Main_Bet        => Bettype,
                         Marketid        => Marketid,
-                        Min_Price       => Back_Price_Type(Price),
+                    --    Min_Price       => Back_Price_Type(Br(Integer(Idx)).Backprice),
+                        Min_Price       => Back_Price_Type(1.01),
                         Match_Directly  => Match_Directly);
 
         when Lay =>
           Send_Lay_Bet(Selectionid     => Br(Integer(Idx)).Selectionid,
                        Main_Bet        => Bettype,
                        Marketid        => Marketid,
-                       Max_Price       => Lay_Price_Type(Price),
+                       Max_Price       => Lay_Price_Type(20.0), --Lay_Price_Type(Br(Integer(Idx)).Layprice),
                        Match_Directly  => Match_Directly);
       end case;
     else

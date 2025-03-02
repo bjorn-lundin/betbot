@@ -82,7 +82,15 @@ procedure Bet_Placer is
 
     pragma compile_time_warning(true, "remove when not testing AI anymore");
     if Bet_Name(1..2) = "DR"
-      or else Bet_Name(1..13) = "HORSE_BACK_AI"
+      or else Bet_Name(1..43) = "HORSE_BACK_AI_NFL_0_HN_300_LR_1P00_E_12_WIN"
+      or else Bet_Name(1..43) = "HORSE_BACK_AI_NFL_1_HN_100_LR_0P10_E_12_PLC"
+      or else Bet_Name(1..43) = "HORSE_BACK_AI_NFL_1_HN_200_LR_1P00_E_12_PLC"
+      or else Bet_Name(1..43) = "HORSE_BACK_AI_NFL_2_HN_100_LR_0P50_E_06_PLC"
+      or else Bet_Name(1..43) = "HORSE_BACK_AI_NFL_2_HN_300_LR_1P00_E_12_PLC"
+      or else Bet_Name(1..43) = "HORSE_BACK_AI_NFL_3_HN_100_LR_0P01_E_12_PLC"
+      or else Bet_Name(1..43) = "HORSE_BACK_AI_NFL_3_HN_300_LR_1P00_E_12_PLC"
+      or else Bet_Name(1..43) = "HORSE_BACK_AI_NFL_5_HN_300_LR_0P05_E_12_PLC"
+
     then
 
       Bet_Id := 0;
