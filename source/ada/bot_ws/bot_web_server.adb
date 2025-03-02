@@ -52,9 +52,10 @@ procedure Bot_Web_Server is
    --===========================================================================
   Semaphore : Binary_Semaphores.Semaphore_Type;
 
-  Saved_Web_Sessions : constant String := "/home/bnl/web_sessions.dat";
+--  Saved_Web_Sessions : constant String := "/home/bnl/web_sessions.dat";
+  Saved_Web_Sessions : constant String := "/usr2/betbot/sslcert/web_sessions.dat";
 
- 
+
   function Do_Service(Request : in AWS.Status.Data;
                       Method  : in String) return AWS.Response.Data is
     use Calendar2;
@@ -71,51 +72,49 @@ procedure Bot_Web_Server is
     if not AWS.Status.Has_Session(Request) then
       Logging.Log(Service, "NO SESSION EXISTS - Method : " & Method & "' Context : '" & Context & "'" );
       return AWS.Response.Acknowledge (Status_Code => AWS.Messages.S401); -- unauthorized
-    end if;      
-      
+    end if;
+
     Session_ID := Aws.Status.Session(Request);
-    declare 
+    declare
       Username   : constant String := AWS.Session.Get(Session_ID, "username");
-    begin    
-  
+    begin
+
       Logging.Log(Service, "Method : " & Method & " Context : " & Context & " Username : '" & Username & "'" );
-      
+
       if Username = "" then
         Logging.Log(Service, "Username blank - needs login");
         return AWS.Response.Acknowledge (Status_Code => AWS.Messages.S401); -- unauthorized
-      
-      elsif Context="check_logged_in" then        
-        declare 
+
+      elsif Context="check_logged_in" then
+        declare
           Params  : constant Aws.Parameters.List := Aws.Status.Parameters(Request);
           Name    : constant String := Aws.Parameters.Get(Params,"username");
         begin
 
           Logging.Log(Service, "Method : Get" & " Context : '" & Context &
-                        "' Username-session: '" & Username & "'" & 
+                        "' Username-session: '" & Username & "'" &
                         "' Username-param: '" & Name & "'" );
           if Username = Name then
             return Aws.Response.Acknowledge (Status_Code => Aws.Messages.S200); -- OK, already logged in
-          else             
+          else
             return Aws.Response.Acknowledge (Status_Code => Aws.Messages.S401); -- unauthorized
           end if;
         end;
       end if;
-      
-      
+
       if Sql.Is_Session_Open then
         Logging.Log(Service, "was already connected, disconnect!");
         Sql.Close_Session;
         Logging.Log(Service, "did disconnect!");
       end if;
-      
-      
+
       Sql.Connect
         (Host     => Bot_Ws_Services.Global.Host.Fix_String,
          Port     => Bot_Ws_Services.Global.Port,
          Db_Name  => Username,                                  -- bnl/jmb/msm
          Login    => Bot_Ws_Services.Global.Login.Fix_String, -- always bnl
          Password => Bot_Ws_Services.Global.Password.Fix_String);
-      
+
       if Context="logout" then
         Response := Aws.Response.Build (Application_JSON,
                                         Bot_Ws_Services.Operator_Logout(Username =>  Username,
@@ -168,7 +167,7 @@ procedure Bot_Web_Server is
         Response := Aws.Response.Build (Application_JSON,
                                         Bot_Ws_Services.Settled_Bets(Username => Username,
                                                                      Context  => Context,
-                                                                     Total_Only => True));        
+                                                                     Total_Only => True));
       elsif Context="todays_total" then
         Response := Aws.Response.Build (Application_JSON,
                                         Bot_Ws_Services.Todays_Total(Username => Username,
@@ -207,14 +206,12 @@ procedure Bot_Web_Server is
       Logging.Log(Service, " Context : " & Context &
                            " Username : " & Username &
                            " Time consumed " & String_Interval(Calendar2.Clock - Start, Days => False));
-      
-      
-      
+
       Sql.Close_Session;
 
       return Response;
     end;
-    
+
   end Do_Service;
    --------------------------------------
   function Put (Request : in AWS.Status.Data) return AWS.Response.Data is
@@ -291,39 +288,47 @@ procedure Bot_Web_Server is
 --      --                              Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
 --      --  end if;
 --      end;
+    Logging.Log(Service, "Context=" & Context & " URI=" & URI);
 
     if Context = "" and URI /= "" then
-      if URI = "/" then
-        Logging.Log(Service, "Returning file : betbot.html");
-        return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
-                                  Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
-      else
+-- to stop some of hacking attempts
+--      if URI = "/" then
+--        Logging.Log(Service, "Returning file : betbot.html");
+--        return Aws.Response.File (Content_Type => AWS.MIME.Text_Html,
+--                                  Filename     => AWS.Config.WWW_Root(O => Config) & "betbot.html");
+--      else
         declare
           Filename     : constant String := URI (2 .. URI'Last);
           FullFilename : constant String := AWS.Config.WWW_Root(O => Config) & Filename;
+          package AD renames Ada.Directories;
+          use type AD.File_Size;
         begin
           Logging.Log(Service, "Filename=" & Filename & " returning:" & FullFilename);
-          if Ada.Directories.Kind(FullFilename) = Ada.Directories.Ordinary_File then
+          if AD.Exists(FullFilename)
+            and then AD.Size(FullFilename) > 0
+            and then AD.Kind(FullFilename) = AD.Ordinary_File
+          then
             return AWS.Response.File(Content_Type => AWS.MIME.Content_Type (FullFilename),
                                      Filename     => FullFilename);
           else
+            Logging.Log(Service, "No ordinary file -Filename=" & Filename);
             return AWS.Response.Acknowledge(Messages.S404, "<p>Page '" & URI & "' Not found.</p>");
           end if;
         end;
-      end if;
+--      end if;
     elsif Context = "flower" then
       declare
         Chipid   : constant String := AWS.Parameters.Get(Params,"chipid");
         Moisture : constant String := AWS.Parameters.Get(Params,"level");
         Result   : Boolean := False;
-      begin        
+      begin
         Result := Bot_Ws_Services.Mail_Moisture_Report(Id => Chipid, Moisture => Integer_4'Value(Moisture));
-        if Result then 
+        if Result then
           return AWS.Response.Acknowledge(Status_Code => Messages.S201, Message_Body => "Created record", Content_Type => Aws.Mime.Text_Plain);      
         else
           return AWS.Response.Acknowledge(Status_Code => Messages.S500, Message_Body => "Bad thing happened", Content_Type => Aws.Mime.Text_Plain);      
         end if;
-      end;          
+      end;
     elsif Context = "air" then
       declare
         Chipid        : constant String := Aws.Parameters.Get(Params,"chipid");
@@ -331,33 +336,33 @@ procedure Bot_Web_Server is
         Pressure      : constant String := Aws.Parameters.Get(Params,"pressure");
         Humidity      : constant String := Aws.Parameters.Get(Params,"humidity");
         Gasresistance : constant String := Aws.Parameters.Get(Params,"gasresistance");
-      begin        
+      begin
         Bot_Ws_Services.Log_Air_Quality(Id            => Chipid,
                                         Temperature   => Fixed_Type'Value(Temperature),
                                         Pressure      => Integer_4'Value(Pressure),
                                         Humidity      => Fixed_Type'Value(Humidity),
                                         Gasresistance => Integer_4'Value(Gasresistance));
-                                        
+
         return Aws.Response.Acknowledge(Status_Code => Messages.S201, Message_Body => "Created record", Content_Type => Aws.Mime.Text_Plain);      
       exception
         when E: others =>
-          Stacktrace.Tracebackinfo(E);          
+          Stacktrace.Tracebackinfo(E);
           return Aws.Response.Acknowledge(Status_Code => Messages.S500, Message_Body => "Bad thing happened", Content_Type => Aws.Mime.Text_Plain);      
-      end;          
+      end;
     elsif Context = "co2" then
       declare
         Chipid        : constant String := Aws.Parameters.Get(Params,"chipid");
         Co2level      : constant String := Aws.Parameters.Get(Params,"level");
-      begin        
+      begin
         Bot_Ws_Services.Log_C02 (Id    => Chipid,
                                  Level => Integer_4'Value(Co2level));
-                                        
+
         return Aws.Response.Acknowledge(Status_Code => Messages.S201, Message_Body => "Created record", Content_Type => Aws.Mime.Text_Plain);      
       exception
         when E: others =>
-          Stacktrace.Tracebackinfo(E);          
+          Stacktrace.Tracebackinfo(E);
           return Aws.Response.Acknowledge(Status_Code => Messages.S500, Message_Body => "Bad thing happened", Content_Type => Aws.Mime.Text_Plain);      
-      end;          
+      end;
     else
       return Do_Service(Request, "Get");
     end if;
@@ -382,17 +387,16 @@ procedure Bot_Web_Server is
     Message : Process_Io.Message_Type;
     Is_Time_To_Exit : Boolean := False;
     Now : Calendar2.Time_Type := Calendar2.Time_Type_First;
-    --use Types;
   begin
     loop
       delay 2.0;
-      Logging.Log("Wait_terminate", "before seize");
+--      Logging.Log("Wait_terminate", "before seize");
       Semaphore.Seize;
-     Logging.Log("Wait_terminate", "after seize");
+--     Logging.Log("Wait_terminate", "after seize");
       begin
-        Logging.Log("Wait_terminate", "before receive");
+--        Logging.Log("Wait_terminate", "before receive");
         Process_Io.Receive( Message, Time_Out => 0.01);
-        Logging.Log("Wait_terminate", "after receive");
+--        Logging.Log("Wait_terminate", "after receive");
         case Process_Io.Identity (Message) is
           when Core_Messages.Exit_Message    =>
             Semaphore.Release;
@@ -411,8 +415,7 @@ procedure Bot_Web_Server is
 
       --restart every day
       Now := Calendar2.Clock;
-      Is_Time_To_Exit := Now.Hour = 01 and then
-       ( Now.Minute = 00 or Now.Minute = 01) ; -- timeout = 2 min
+      Is_Time_To_Exit := Now.Hour = 01 and then Now.Minute = 01 ;
 
       exit when Is_Time_To_Exit;
 

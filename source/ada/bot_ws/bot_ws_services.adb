@@ -53,7 +53,7 @@ package body Bot_Ws_Services is
   Select_Sum_Bets_Grouped_By_Week : Sql.Statement_Type;
   Select_Sum_Bets_Grouped_By_Month : Sql.Statement_Type;
   Select_Distict_Betnames         : Sql.Statement_Type;
-  
+
   Global_Initiated                : Boolean := False;
   Global_Start_Time_List          : Table_Astarttimes.Astarttimes_List_Pack2.List;
 
@@ -957,7 +957,7 @@ package body Bot_Ws_Services is
               begin
                 Move(Utils.Trim(Year'Img) & "-" & Utils.Trim(Month'Img), String_Month);
 
-                if String_Month(7) = ' ' then 
+                if String_Month(7) = ' ' then
                   String_Month(7) := String_Month(6);
                   String_Month(6) := '0';
                 end if;
@@ -1096,7 +1096,7 @@ package body Bot_Ws_Services is
            --Secure     => True);
         --Credential => Auth'Unchecked_Access);
         use Ada.Characters.Latin_1;
-        Msg : constant String := 
+        Msg : constant String :=
                 "Fuktnivå :" & Moisture_Pct'Img & "% för blomma " & Sensorname.Fix_String & Cr & Lf &
                 "tid : " & Calendar2.String_Date_Time_Iso (T, " ", " ") & Cr & Lf &
                 "sent from: " & Gnat.Sockets.Host_Name ;
