@@ -458,6 +458,16 @@ if [ $MINUTE == "01" ] ; then
   $BOT_SCRIPT/bash/duckdns.bash ; # update dyndns once per hour
 fi
 
+if [ $MINUTE == "21" ] ; then
+  $BOT_SCRIPT/bash/duckdns.bash ; # update dyndns once per hour
+fi
+
+if [ $MINUTE == "41" ] ; then
+  $BOT_SCRIPT/bash/duckdns.bash ; # update dyndns once per hour
+fi
+
+
+
 # TEMP=$(cat /sys/class/thermal/thermal_zone0/temp)
 # TEMP=$(($TEMP/1000))
 # echo "$(date -Is) $TEMP" >> $BOT_ROOT/data/temperaturelog/$(date +%F)-temperature.dat
@@ -475,7 +485,6 @@ ALARM_TODAY_FILE=/tmp/alarm_${DAY_FILE}
 MAIL_LIST="b.f.lundin@gmail.com"
 
 DISK_LIST="sda1"
-#DISK_LIST="rl_ibmtc-root"
 
 for DISK in $DISK_LIST ; do
   USED_SIZE=$( df  | grep $DISK | awk '{print $3}')
@@ -514,7 +523,7 @@ case $HOUR  in
    # do checks
 
     . $BOT_ROOT/bot.bash bnl
-    psql --command="select * from AEVENTS where COUNTRYCODE='ww'" --quiet --tuples-only >/dev/null
+    psql --command="select * from AEVENTS where COUNTRYCODE='ww'" --quiet --tuples-only >/dev/null 2>&1
     R=$?
     DAY2_FILE=$(date +"%F")
     DB_ALARM_TODAY_FILE=/tmp/db_alarm_${DAY2_FILE}
@@ -542,8 +551,8 @@ case $HOUR  in
 esac
 
 # update the 'profit' of the AI bets
-if [ $MINUTE == "58" ] ; then
-     psql --dbname=bnl --command="
+#if [ $MINUTE == "58" ] ; then
+     psql --dbname=bnl --quiet --command="
 with the_bets as (
   select b.betname, p.marketid, p.selectionid, p.backprice, p.layprice
   from abets b, aprices p
@@ -580,9 +589,11 @@ from the_bets
 where abets.marketid = the_bets.marketid
 and abets.selectionid = the_bets.selectionid
 and abets.betname = the_bets.betname
-and abets.status <> 'SETTLED'; commit; "
+and abets.betname <> 'HORSE_BACK_AI_NFL_0_HN_300_LR_1P00_E_12_PLC'
+and abets.betname <> 'HORSE_BACK_AI_NFL_4_HN_200_LR_0P05_E_08_PLC'
+and abets.status <> 'SETTLED'; commit; "   >/dev/null 2>&1
 
-fi
+#fi
 
 
 log "stop"
