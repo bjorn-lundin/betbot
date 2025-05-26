@@ -307,7 +307,7 @@ procedure Poll is
 
     Side            : Bet_Side_Type := Back;
     Idx             : Long_Long_Integer := 100;
-    
+
     Market_Name     : String := Trim(Win_Marketname);
     Use_Win_Market_Name : Boolean := False;
 
@@ -363,11 +363,12 @@ procedure Poll is
     end loop;
 
 
-    Use_Win_Market_Name := Bettype in Horse_Back_AI_nfl_0_hn_300_lr_1p00_E_12_Plc ..
-                                     Horse_Back_AI_NFL_0_HN_300_LR_1p00_E_12_Win;
+--    Use_Win_Market_Name := Bettype in Horse_Back_AI_nfl_0_hn_300_lr_1p00_E_12_Plc ..
+--                                     Horse_Back_AI_NFL_0_HN_300_LR_1p00_E_12_Win;
+    pragma compile_time_warning(true, "uncomment if to be reused");
 
-    Params.Set_Field (Field_Name => "winMarketName", Field => Market_Name);
-    Params.Set_Field (Field_Name => "useWinMarketName", Field => Use_Win_Market_Name);
+--    Params.Set_Field (Field_Name => "winMarketName", Field => Market_Name);
+--    Params.Set_Field (Field_Name => "useWinMarketName", Field => Use_Win_Market_Name);
 
     Params.Set_Field (Field_Name => "hiddenNodes", Field => Long_Long_Integer'Value(Image(24..26)));
     S_Lr(2) := '.'; -- Get rid of the 'p'
@@ -411,6 +412,16 @@ procedure Poll is
         Idx:= Result.Get("bestRunner");
         Idx := Idx +1;  --convert 0-based idx to 1-based
       end if;
+    end if;
+
+    if not Cfg.Bet(Bettype).Enabled then
+      Log("Not enbled bet in poll.ini " & Bettype'Img );
+      return;
+    end if;
+
+    if Br(Integer(Idx)).Selectionid = Bad_Selection_Id then
+      Log("Bad selectionid, = 0 ");
+      return;
     end if;
 
     if Idx < 100 then
@@ -801,42 +812,41 @@ procedure Poll is
                     end if;
                   end;
 
-                when Horse_Back_AI_Nfl_1_Hn_100_Lr_0p10_E_12_Plc .. Horse_Back_AI_NFL_0_HN_300_LR_1p00_E_12_Win =>
-                  if First_Poll then
-                    declare
-                      M_Type     : Market_Type := Win;
-                      Image      : String := I'Img;
-                      Do_Try_Bet : Boolean := True;
-                      use Markets;
-                    begin
-                      if Utils.Position(Image, "PLC") > Integer(0) then
-                        M_Type := Place;
-                        Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners = Integer_4(3) ;
-                        Match_Directly := True;
-                      elsif Utils.Position(Image, "WIN") > Integer(0) then
-                        Do_Try_Bet := Markets_Array(Place).Numwinners = Integer_4(3) ;
-                        M_Type         := Win;
-                        Match_Directly := True;
-                      end if;
-
-                      if Do_Try_Bet then
-                        case Markets_Array(Win).Market_Subtype is
-                          when Plain  => Do_Try_Bet := not (Cfg.Bet(I).Chase_Allowed or Cfg.Bet(I).Hurdle_Allowed);
-                          when Chase  => Do_Try_Bet := Cfg.Bet(I).Chase_Allowed;
-                          when Hurdle => Do_Try_Bet := Cfg.Bet(I).Hurdle_Allowed;
-                        end case;
-                      end if;
-
-
-                      if Do_Try_Bet then
-                        Try_To_Make_Back_Bet_AI(Bettype         => I,
-                                                Br              => Unsorted_Runners,
-                                                Marketid        => Markets_Array(M_Type).Marketid,
-                                                Win_Marketname  => Market.Marketname,
-                                                Match_Directly  => Match_Directly);
-                    end if;
-                  end;
-                  end if;
+--                when Horse_Back_AI_Nfl_1_Hn_100_Lr_0p10_E_12_Plc .. Horse_Back_AI_NFL_0_HN_300_LR_1p00_E_12_Win =>
+--                  if First_Poll then
+--                    declare
+--                      M_Type     : Market_Type := Win;
+--                      Image      : String := I'Img;
+--                      Do_Try_Bet : Boolean := True;
+--                      use Markets;
+--                    begin
+--                      if Utils.Position(Image, "PLC") > Integer(0) then
+--                        M_Type := Place;
+--                        Do_Try_Bet := Found_Place and then Markets_Array(Place).Numwinners = Integer_4(3) ;
+--                        Match_Directly := True;
+--                      elsif Utils.Position(Image, "WIN") > Integer(0) then
+--                        Do_Try_Bet := Markets_Array(Place).Numwinners = Integer_4(3) ;
+--                        M_Type         := Win;
+--                        Match_Directly := True;
+--                      end if;
+--
+--                      if Do_Try_Bet then
+--                        case Markets_Array(Win).Market_Subtype is
+--                          when Plain  => Do_Try_Bet := not (Cfg.Bet(I).Chase_Allowed or Cfg.Bet(I).Hurdle_Allowed);
+--                          when Chase  => Do_Try_Bet := Cfg.Bet(I).Chase_Allowed;
+--                          when Hurdle => Do_Try_Bet := Cfg.Bet(I).Hurdle_Allowed;
+--                        end case;
+--                      end if;
+--
+--                      if Do_Try_Bet then
+--                        Try_To_Make_Back_Bet_AI(Bettype         => I,
+--                                                Br              => Unsorted_Runners,
+--                                                Marketid        => Markets_Array(M_Type).Marketid,
+--                                                Win_Marketname  => Market.Marketname,
+--                                                Match_Directly  => Match_Directly);
+--                    end if;
+--                  end;
+--                  end if;
               end case;
 
             when Hound => null;

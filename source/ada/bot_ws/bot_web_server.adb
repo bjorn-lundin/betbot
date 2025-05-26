@@ -301,7 +301,7 @@ procedure Bot_Web_Server is
           Filename     : constant String := URI (2 .. URI'Last);
           FullFilename : constant String := AWS.Config.WWW_Root(O => Config) & Filename;
           package AD renames Ada.Directories;
-          use type AD.File_Size;
+          use AD;
         begin
           Logging.Log(Service, "Filename=" & Filename & " returning:" & FullFilename);
           if AD.Exists(FullFilename)

@@ -10,17 +10,17 @@ package Config is
                     Horse_Back_1_10_07_1_2_Plc_1_01,
                     Horse_Back_1_28_02_1_2_Plc_1_01,
                     Horse_Back_1_38_00_1_2_Plc_1_01,
-                    Horse_Back_1_56_00_1_4_Plc_1_01,
-                    Horse_Back_AI_Nfl_1_Hn_100_Lr_0p10_E_12_Plc,
-                    Horse_Back_AI_Nfl_2_Hn_100_Lr_0p50_E_06_Plc,
-                    Horse_Back_AI_Nfl_3_Hn_100_Lr_0p01_E_12_Plc,
-                    Horse_Back_AI_Nfl_4_Hn_200_Lr_0p05_E_08_Plc,
-                    Horse_Back_AI_Nfl_5_Hn_300_Lr_0p05_E_12_Plc,
-                    Horse_Back_AI_nfl_0_hn_300_lr_1p00_E_12_Plc,
-                    Horse_Back_AI_nfl_1_hn_200_lr_1p00_E_12_Plc,
-                    Horse_Back_AI_nfl_2_hn_300_lr_1p00_E_12_Plc,
-                    Horse_Back_AI_nfl_3_hn_300_lr_1p00_E_12_Plc,
-                    Horse_Back_AI_NFL_0_HN_300_LR_1p00_E_12_Win
+                    Horse_Back_1_56_00_1_4_Plc_1_01); --,
+--                    Horse_Back_AI_Nfl_1_Hn_100_Lr_0p10_E_12_Plc,
+--                    Horse_Back_AI_Nfl_2_Hn_100_Lr_0p50_E_06_Plc,
+--                    Horse_Back_AI_Nfl_3_Hn_100_Lr_0p01_E_12_Plc,
+--                    Horse_Back_AI_Nfl_4_Hn_200_Lr_0p05_E_08_Plc,
+--                    Horse_Back_AI_Nfl_5_Hn_300_Lr_0p05_E_12_Plc,
+--                    Horse_Back_AI_nfl_0_hn_300_lr_1p00_E_12_Plc,
+--                    Horse_Back_AI_nfl_1_hn_200_lr_1p00_E_12_Plc,
+--                    Horse_Back_AI_nfl_2_hn_300_lr_1p00_E_12_Plc,
+--                    Horse_Back_AI_nfl_3_hn_300_lr_1p00_E_12_Plc,
+--                    Horse_Back_AI_NFL_0_HN_300_LR_1p00_E_12_Win
 
 
 
@@ -41,7 +41,7 @@ package Config is
 --                      Horse_Back_1_28_02_1_2_Plc_1_01_Hrd,
 --                      Horse_Back_1_38_00_1_2_Plc_1_01_Hrd,
 --                      Horse_Back_1_56_00_1_4_Plc_1_01_Hrd
-                   );
+--                   );
 
 
   type Allowed_Days_Array is array(Calendar2.Week_Day_Type'Range) of Boolean;
